@@ -1,9 +1,20 @@
+require("dotenv").config();
 const express = require("express");
 const OpenAI = require("openai");
+const Stripe = require("stripe");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const isLive = process.env.STRIPE_MODE === "live";
+const stripe = new Stripe(
+  isLive ? process.env.STRIPE_SECRET_KEY_LIVE : process.env.STRIPE_SECRET_KEY_TEST
+);
+const stripePublishableKey = isLive
+  ? process.env.STRIPE_PUBLISHABLE_KEY_LIVE
+  : process.env.STRIPE_PUBLISHABLE_KEY_TEST;
+
 const callReports = {};
+const paidCalls = new Set(); // track which callIds have been paid for
 
 const app = express();
 app.use(express.json());
@@ -84,7 +95,7 @@ app.post("/webhook", async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4.1",
       messages: [
         {
           role: "user",
@@ -135,11 +146,152 @@ ${JSON.stringify(transcript)}`,
   }
 });
 
-// Get report for a call
-app.get("/report/:callId", (req, res) => {
-  const report = callReports[req.params.callId];
-  if (!report) return res.status(404).json({ error: "Report not ready" });
-  res.json(report);
+// Get report for a call — fetches transcript from Retell, scores with OpenAI
+app.get("/report/:callId", async (req, res) => {
+  const callId = req.params.callId;
+
+  // Return cached report if already scored
+  if (callReports[callId]) return res.json(callReports[callId]);
+
+  try {
+    // Wait for Retell to finish saving the call data
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const retellRes = await fetch(`https://api.retellai.com/v2/get-call/${callId}`, {
+      headers: { Authorization: `Bearer ${process.env.RETELL_API_KEY}` },
+    });
+
+    if (!retellRes.ok) {
+      const err = await retellRes.text();
+      console.error(`report: Retell fetch failed for ${callId}`, err);
+      return res.status(502).json({ error: "Failed to fetch call from Retell" });
+    }
+
+    const callData = await retellRes.json();
+    const transcript = callData.transcript_object || callData.transcript;
+
+    if (!transcript) {
+      return res.status(404).json({ error: "No transcript available for this call" });
+    }
+
+    // Extract call metadata for the frontend
+    const durationSec = callData.end_timestamp && callData.start_timestamp
+      ? Math.round((callData.end_timestamp - callData.start_timestamp) / 1000)
+      : null;
+    const prospectName = callData.metadata?.prospectType || "Prospect";
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4.1",
+      messages: [
+        {
+          role: "user",
+          content: `You are a brutally honest cold call coach. Analyze this sales call transcript and score it fairly. Be strict — a score of 8+ should only go to genuinely excellent calls. Most average calls should score 4-6. Poor calls should score 1-3.
+
+Scoring criteria:
+- Opening (0-10): Did the caller introduce themselves clearly, establish credibility, and give a compelling reason for calling within the first 30 seconds? No intro = 0-2. Weak intro = 3-4. Decent = 5-6. Strong = 7-8. Exceptional = 9-10.
+- Objection Handling (0-10): Did the caller address the prospect's concerns directly and confidently? Ignored objections = 0-2. Poor handling = 3-4. Decent = 5-6. Good = 7-8. Excellent = 9-10.
+- Tone & Pace (0-10): Was the caller confident, natural, and easy to listen to? Nervous/rushed/monotone = 0-3. Okay = 4-6. Good = 7-8. Excellent = 9-10.
+- Closing (0-10): Did the caller attempt to secure a next step (meeting, follow-up, demo)? No attempt = 0-2. Weak attempt = 3-4. Decent = 5-6. Strong = 7-8. Perfect = 9-10.
+- Active Listening (0-10): Did the caller respond to what the prospect actually said or just follow a script? Ignored prospect = 0-2. Minimal = 3-4. Some = 5-6. Good = 7-8. Excellent = 9-10.
+
+If the transcript is blank, silent, or contains no meaningful sales conversation, return all scores as 0 and verdict as "No pitch detected."
+
+Return only valid JSON with these exact fields:
+{
+  "overall": (average of the 5 skill scores, one decimal),
+  "verdict": (one sentence summary of the call),
+  "talkRatio": (estimated percentage the caller was talking e.g. "62%"),
+  "objectionCount": (number of objections raised by prospect),
+  "highlights": [
+    { "type": "positive", "text": "one line about what went well" },
+    { "type": "negative", "text": "one line about what went wrong" },
+    { "type": "negative", "text": "one line about another weakness" },
+    { "type": "positive", "text": "one line about another strength" }
+  ],
+  "skills": {
+    "opening": (0-10),
+    "objectionHandling": (0-10),
+    "toneAndPace": (0-10),
+    "closing": (0-10),
+    "activeListening": (0-10)
+  }
+}
+
+Transcript:
+${JSON.stringify(transcript)}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const report = JSON.parse(completion.choices[0].message.content);
+    report.meta = { durationSec, prospectName };
+    callReports[callId] = report;
+    console.log(`report: scored call ${callId}`, report);
+    res.json(report);
+  } catch (err) {
+    console.error(`report: failed for ${callId}`, err.message);
+    res.status(500).json({ error: "Failed to generate report" });
+  }
+});
+
+// Stripe config — frontend needs the publishable key
+app.get("/stripe-config", (_req, res) => {
+  res.json({ publishableKey: stripePublishableKey });
+});
+
+// Create Stripe Checkout Session
+app.post("/create-checkout", async (req, res) => {
+  const { callId, email } = req.body;
+  if (!callId) return res.status(400).json({ error: "Missing callId" });
+
+  try {
+    const origin = `${req.protocol}://${req.get("host")}`;
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: "ColdTalk Full Debrief" },
+            unit_amount: 149, // $1.49
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: email || undefined,
+      metadata: { callId },
+      success_url: `${origin}/?paid=true&call_id=${callId}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?paid=false&call_id=${callId}`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("create-checkout error:", err.message);
+    res.status(500).json({ error: "Failed to create checkout session" });
+  }
+});
+
+// Verify payment completed
+app.get("/verify-payment/:callId", async (req, res) => {
+  const { callId } = req.params;
+  const { session_id } = req.query;
+
+  if (paidCalls.has(callId)) return res.json({ paid: true });
+
+  if (!session_id) return res.json({ paid: false });
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    if (session.payment_status === "paid" && session.metadata.callId === callId) {
+      paidCalls.add(callId);
+      return res.json({ paid: true });
+    }
+    res.json({ paid: false });
+  } catch (err) {
+    console.error("verify-payment error:", err.message);
+    res.status(500).json({ error: "Failed to verify payment" });
+  }
 });
 
 // Health check

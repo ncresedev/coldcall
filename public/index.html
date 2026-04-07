@@ -627,50 +627,6 @@
     #result-screen .rs-progress-track { width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
     #result-screen .rs-progress-fill { height: 100%; width: 0%; background: #00c853; border-radius: 99px; transition: width 0.8s ease; }
 
-    /* Modal */
-    #rs-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; align-items: center; justify-content: center; padding: 1rem; }
-    #rs-modal-bg.open { display: flex; }
-    #rs-modal-bg .rs-modal { background: #161618; border: 0.5px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 400px; font-family: 'Inter', sans-serif; }
-    #rs-modal-bg .rs-modal-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-    #rs-modal-bg .rs-modal-hdr p:first-child { font-size: 16px; font-weight: 500; color: #F0EFE9; }
-    #rs-modal-bg .rs-modal-hdr p:last-child { font-size: 13px; color: #8A8A8F; margin-top: 2px; }
-    #rs-modal-bg .rs-close-x { background: none; border: none; font-size: 18px; cursor: pointer; color: #4A4A50; padding: 0; line-height: 1; }
-    #rs-modal-bg .rs-wyg { background: rgba(74,186,138,0.1); border: 0.5px solid #2D7A5A; border-radius: 8px; padding: 10px 12px; margin-bottom: 13px; font-size: 12px; color: #4ABA8A; line-height: 1.7; }
-    #rs-modal-bg .rs-fg { margin-bottom: 12px; }
-    #rs-modal-bg .rs-fl { font-size: 12px; color: #8A8A8F; display: block; margin-bottom: 4px; }
-    #rs-modal-bg .rs-fg input { width: 100%; padding: 9px 12px; border: 0.5px solid rgba(255,255,255,0.12); border-radius: 8px; font-size: 14px; color: #F0EFE9; background: #1E1E21; font-family: 'Inter', sans-serif; }
-    #rs-modal-bg .rs-fg input::placeholder { color: #4A4A50; }
-    #rs-modal-bg .rs-fg input:focus { outline: none; border-color: #2D7A5A; box-shadow: 0 0 0 2px rgba(74,186,138,0.1); }
-    #rs-modal-bg .rs-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    #rs-modal-bg .rs-divline { text-align: center; font-size: 11px; color: #4A4A50; margin: 10px 0; position: relative; }
-    #rs-modal-bg .rs-divline::before { content:''; position:absolute; top:50%; left:0; right:0; height:0.5px; background: rgba(255,255,255,0.07); }
-    #rs-modal-bg .rs-divline span { background: #161618; padding: 0 8px; position: relative; }
-    #rs-modal-bg .rs-sec-note { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4A4A50; margin: 8px 0 12px; }
-    #rs-modal-bg .rs-test-card-btn { width: 100%; padding: 8px; background: transparent; border: 0.5px solid rgba(74,186,138,0.35); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: #4ABA8A; cursor: pointer; margin-bottom: 10px; letter-spacing: 0.02em; transition: background 0.15s; }
-    #rs-modal-bg .rs-test-card-btn:hover { background: rgba(74,186,138,0.08); }
-    #rs-modal-bg .rs-pay-btn { width: 100%; padding: 13px; background: #4ABA8A; color: #0a1f16; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; }
-    #rs-modal-bg .rs-pay-btn:hover { background: #5dcba0; }
-    #rs-modal-bg .rs-pay-btn:disabled { background: #1E1E21; color: #4A4A50; cursor: not-allowed; }
-    #rs-modal-bg .rs-success-wrap { padding: 2rem 1rem; text-align: center; }
-    #rs-modal-bg .rs-check-circle { width: 52px; height: 52px; background: rgba(74,186,138,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 20px; color: #4ABA8A; }
-    #rs-modal-bg .rs-success-wrap h2 { font-size: 17px; font-weight: 500; margin-bottom: 8px; color: #F0EFE9; }
-    #rs-modal-bg .rs-success-wrap p { font-size: 13px; color: #8A8A8F; line-height: 1.6; }
-    #rs-modal-bg .rs-dots { display: flex; gap: 4px; justify-content: center; margin-top: 18px; }
-    #rs-modal-bg .rs-d { width: 6px; height: 6px; background: #4ABA8A; border-radius: 50%; animation: rsPop 1.2s infinite; }
-    #rs-modal-bg .rs-d:nth-child(2){animation-delay:.2s} #rs-modal-bg .rs-d:nth-child(3){animation-delay:.4s}
-    @keyframes rsPop{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-
-    @media (max-width: 680px) {
-      #rs-modal-bg { padding: 0; align-items: flex-end; }
-      #rs-modal-bg .rs-modal {
-        border-radius: 16px 16px 0 0;
-        max-width: 100%;
-        max-height: 92vh;
-        overflow-y: auto;
-        padding: 1.25rem 1.25rem 2rem;
-      }
-    }
-
     #powered-by {
       position: fixed;
       bottom: 0;
@@ -973,16 +929,6 @@
       checkReady();
     }
 
-    // Modal helpers
-    function rsFmtC(el) {
-      let v = el.value.replace(/\D/g, "").substring(0, 16);
-      el.value = v.replace(/(.{4})/g, "$1 ").trim();
-    }
-    function rsFmtX(el) {
-      let v = el.value.replace(/\D/g, "").substring(0, 4);
-      if (v.length > 2) v = v.substring(0, 2) + " / " + v.substring(2);
-      el.value = v;
-    }
     let _loadingMsgInterval = null;
     let _loadingProgInterval = null;
 
@@ -1023,26 +969,21 @@
       document.querySelectorAll(".rs-loading-msg").forEach(m => m.classList.remove("active"));
     }
 
-    function pollForReport(callId) {
+    async function fetchReport(callId) {
       showLoadingState();
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        attempts++;
-        try {
-          const res = await fetch(`/report/${callId}`);
-          if (res.ok) {
-            const report = await res.json();
-            clearInterval(interval);
-            currentReport = report;
-            populateReport(report);
-          }
-        } catch (e) { /* keep polling */ }
-        if (attempts >= 15) {
-          clearInterval(interval);
-          stopLoadingState();
-          document.querySelector("#result-screen .rs-right").classList.remove("loading");
+      try {
+        const res = await fetch(`/report/${callId}`);
+        if (res.ok) {
+          const report = await res.json();
+          currentReport = report;
+          populateReport(report);
+          return;
         }
-      }, 2000);
+      } catch (e) {
+        console.error("Failed to fetch report:", e);
+      }
+      stopLoadingState();
+      document.querySelector("#result-screen .rs-right").classList.remove("loading");
     }
 
     function populateReport(report) {
@@ -1107,10 +1048,29 @@
       }
     }
 
-    function rsUseTestCard() {
-      document.getElementById("rs-fc").value = "4242 4242 4242 4242";
-      document.getElementById("rs-fx").value = "12 / 28";
-      document.getElementById("rs-fv").value = "123";
+    async function rsStartCheckout() {
+      const btn = document.getElementById("rs-cta-btn");
+      btn.textContent = "Redirecting...";
+      btn.disabled = true;
+      try {
+        const res = await fetch("/create-checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ callId: currentCallId }),
+        });
+        const { url, error } = await res.json();
+        if (url) {
+          window.location.href = url;
+        } else {
+          alert("Checkout failed: " + (error || "Unknown error"));
+          btn.textContent = "Unlock my full debrief \u2192";
+          btn.disabled = false;
+        }
+      } catch (e) {
+        console.error("Checkout error:", e);
+        btn.textContent = "Unlock my full debrief \u2192";
+        btn.disabled = false;
+      }
     }
 
     function rsUnlockScorecard() {
@@ -1178,20 +1138,6 @@
         realScore >= 6.5 ? "Above average for this difficulty" :
         realScore >= 5 ? "Room to improve — keep practising" :
         "Tough call — review the highlights below";
-    }
-
-    function rsHandlePay() {
-      emailCollected = document.getElementById("rs-fe").value.trim();
-      const btn = document.getElementById("rs-pay-btn");
-      btn.textContent = "Processing…";
-      btn.disabled = true;
-      setTimeout(() => {
-        document.getElementById("rs-modal-bg").classList.remove("open");
-        document.getElementById("rs-pay-modal").style.display = "";
-        btn.textContent = "Pay $1.49 and unlock";
-        btn.disabled = false;
-        rsUnlockScorecard();
-      }, 1800);
     }
 
     function rsDownloadReport() {
@@ -1345,10 +1291,107 @@
       doc.save("coldtalk-report.pdf");
     }
 
-    // Bind after DOM is fully parsed
-    document.addEventListener("DOMContentLoaded", () => {
+    // Populate the left-side verdict panel from report data (used on Stripe return)
+    function populateVerdictFromReport(report) {
+      const meta = report.meta || {};
+      const score = typeof report.overall === "number" ? report.overall : parseFloat(report.overall);
+      const isWin = score >= 6;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+      // Duration
+      let durStr = "—";
+      if (meta.durationSec) {
+        const m = Math.floor(meta.durationSec / 60);
+        const s = String(meta.durationSec % 60).padStart(2, "0");
+        durStr = `${m}:${s}`;
+      }
+      document.getElementById("rs-duration").textContent = durStr;
+      document.getElementById("rs-call-meta").textContent = `${durStr} · Today`;
+
+      // Eyebrow
+      const name = meta.prospectName || "Prospect";
+      document.getElementById("rs-eyebrow").textContent = `${name} · ${dateStr}`;
+
+      // Heading & body
+      if (isWin) {
+        document.getElementById("rs-heading").textContent = "They're in.";
+      } else {
+        document.getElementById("rs-heading").textContent = "Not this time — but you were close.";
+      }
+      // Body gets overwritten by populateReport with the verdict
+
+      // Quote
+      const winQuotes = [
+        { text: "Sales are contingent upon the attitude of the salesman, not the attitude of the prospect.", attr: "— W. Clement Stone" },
+        { text: "The secret of getting ahead is getting started.", attr: "— Mark Twain" },
+        { text: "Make a customer, not a sale.", attr: "— Katherine Barchetti" },
+      ];
+      const lossQuotes = [
+        { text: "I never lose. I either win or learn.", attr: "— Nelson Mandela" },
+        { text: "Most people give up just when they're about to achieve success.", attr: "— Ross Perot" },
+        { text: "The difference between a successful person and others is not a lack of strength, not a lack of knowledge, but rather a lack of will.", attr: "— Vince Lombardi" },
+      ];
+      const quotes = isWin ? winQuotes : lossQuotes;
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById("rs-quote-text").textContent = `"${q.text}"`;
+      document.getElementById("rs-quote-attr").textContent = q.attr;
+
+      // Next steps
+      if (isWin) {
+        document.getElementById("rs-next-1").textContent = "Send a follow-up email within the hour while you're top of mind.";
+        document.getElementById("rs-next-2").textContent = "Book the next meeting before they have time to cool off.";
+        document.getElementById("rs-next-3").textContent = "Review what worked — replicate it on your next call.";
+      } else {
+        document.getElementById("rs-next-1").textContent = "Identify the exact moment the prospect disengaged — that's your lesson.";
+        document.getElementById("rs-next-2").textContent = "Practice your opener and value prop until they're second nature.";
+        document.getElementById("rs-next-3").textContent = "Try a different prospect type or difficulty and apply what you learned.";
+      }
+    }
+
+    // Bind after DOM is fully parsed + handle Stripe return
+    document.addEventListener("DOMContentLoaded", async () => {
       const tryAgain = document.getElementById("rs-try-again");
       if (tryAgain) tryAgain.addEventListener("click", resetFromVerdict);
+
+      // Handle return from Stripe Checkout
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("paid") === "true" && params.get("call_id") && params.get("session_id")) {
+        const callId = params.get("call_id");
+        const sessionId = params.get("session_id");
+        currentCallId = callId;
+
+        // Clean URL
+        window.history.replaceState({}, "", "/");
+
+        // Show result screen with loading
+        document.getElementById("result-screen").classList.add("visible");
+        showLoadingState();
+
+        try {
+          // Verify payment
+          const payRes = await fetch(`/verify-payment/${callId}?session_id=${sessionId}`);
+          const { paid } = await payRes.json();
+
+          // Fetch the report
+          const reportRes = await fetch(`/report/${callId}`);
+          if (reportRes.ok) {
+            const report = await reportRes.json();
+            currentReport = report;
+            populateVerdictFromReport(report);
+            populateReport(report);
+          }
+
+          if (paid) {
+            rsUnlockScorecard();
+          }
+        } catch (e) {
+          console.error("Post-payment error:", e);
+          stopLoadingState();
+          document.querySelector("#result-screen .rs-right").classList.remove("loading");
+        }
+      }
     });
 
     function selectPill(pill) {
@@ -1447,7 +1490,7 @@
           clearInterval(timerInterval);
           const isWin = determineOutcome(lastTranscript);
           showVerdictScreen(isWin);
-          if (currentCallId) pollForReport(currentCallId);
+          if (currentCallId) fetchReport(currentCallId);
         });
 
         retellWebClient.on("error", (error) => {
@@ -1550,7 +1593,7 @@
           <div class="rs-bar-row"><div class="rs-bar-lbl-row"><span class="rs-bar-lbl">Closing</span><span class="rs-bar-score-lock" id="rs-score-close">locked</span></div><div class="rs-bar-track"><div class="rs-bar-fill locked" id="rs-bar-close" style="width:100%;"></div></div></div>
           <div class="rs-bar-row"><div class="rs-bar-lbl-row"><span class="rs-bar-lbl">Active listening</span><span class="rs-bar-score-lock" id="rs-score-listen">locked</span></div><div class="rs-bar-track"><div class="rs-bar-fill locked" id="rs-bar-listen" style="width:100%;"></div></div></div>
           <div class="rs-lock-banner" id="rs-lock-banner">&#128274; &nbsp;4 more insights locked — unlock for $1.49</div>
-          <button class="rs-cta-btn" id="rs-cta-btn" onclick="document.getElementById('rs-modal-bg').classList.add('open')">Unlock my full debrief &#8594;</button>
+          <button class="rs-cta-btn" id="rs-cta-btn" onclick="rsStartCheckout()">Unlock my full debrief &#8594;</button>
           <button class="rs-download-btn" id="rs-download-btn" onclick="rsDownloadReport()">&#8595; Download report (PDF)</button>
           <p class="rs-price-note" id="rs-price-note">One-time $1.49</p>
         </div>
@@ -1559,29 +1602,6 @@
     </div>
   </div>
 
-  <!-- Unlock modal -->
-  <div id="rs-modal-bg">
-    <div id="rs-pay-modal" class="rs-modal">
-      <div class="rs-modal-hdr">
-        <div><p>Unlock your full debrief</p><p>Scores, highlights &amp; skill breakdown</p></div>
-        <button class="rs-close-x" onclick="document.getElementById('rs-modal-bg').classList.remove('open')">&#x2715;</button>
-      </div>
-      <div class="rs-wyg">&#10003; Full score &nbsp;&#10003; Objection scripts &nbsp;&#10003; Sentiment timeline &nbsp;&#10003; Follow-up drafts &nbsp;&#10003; Buying signals</div>
-      <div class="rs-fg"><label class="rs-fl">Email</label><input type="email" id="rs-fe" placeholder="you@company.com"/></div>
-      <div class="rs-divline"><span>payment</span></div>
-      <button type="button" class="rs-test-card-btn" onclick="rsUseTestCard()">Use test card</button>
-      <div class="rs-fg"><label class="rs-fl">Card number</label><input type="text" id="rs-fc" placeholder="1234 5678 9012 3456" maxlength="19" oninput="rsFmtC(this)"/></div>
-      <div class="rs-two-col">
-        <div class="rs-fg"><label class="rs-fl">Expiry</label><input type="text" id="rs-fx" placeholder="MM / YY" maxlength="7" oninput="rsFmtX(this)"/></div>
-        <div class="rs-fg"><label class="rs-fl">CVC</label><input type="text" id="rs-fv" placeholder="123" maxlength="3"/></div>
-      </div>
-      <div class="rs-sec-note">
-        <svg width="11" height="13" viewBox="0 0 12 14" fill="none"><rect x="1" y="5" width="10" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Secured by Stripe — we never store your card
-      </div>
-      <button class="rs-pay-btn" id="rs-pay-btn" onclick="rsHandlePay()">Pay $1.49 and unlock</button>
-    </div>
-  </div>
 
   <a id="powered-by" href="https://ncrese.com" target="_blank">powered by <span style="color: #097057">ncrese</span></a>
 
