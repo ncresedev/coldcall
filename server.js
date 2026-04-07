@@ -1,188 +1,152 @@
-require("dotenv").config();
 const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
 const OpenAI = require("openai");
-
-const app = express();
-app.use(express.json());
-
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const DIFFICULTY_INSTRUCTIONS = {
-  easy: "You are open-minded and willing to listen. You are polite and give the caller a fair chance to explain themselves.",
-  medium: "You are skeptical and busy. You push back on claims, ask pointed questions, and hint that you don't have much time.",
-  hard: "You are dismissive and want to hang up. You interrupt, express annoyance, and frequently try to end the call.",
-};
+const callReports = {};
 
-function buildSystemPrompt({ product, prospectType, difficulty }) {
-  const difficultyGuide =
-    DIFFICULTY_INSTRUCTIONS[difficulty] || DIFFICULTY_INSTRUCTIONS.medium;
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
 
-  return `You are roleplaying as a prospect receiving a cold call. Stay in character at all times.
-
-PROSPECT TYPE: ${prospectType}
-PRODUCT BEING SOLD: ${product}
-PERSONALITY: ${difficultyGuide}
-
-RULES:
-- You answer the phone first with a short greeting (e.g. "Hello?", "Yeah?", "This is [name].")
-- Keep every response to 1-3 sentences maximum — this is a phone call, not an essay.
-- React naturally to what the caller says. If they pitch well, warm up slightly. If they stumble, get more impatient.
-- Raise realistic objections relevant to your prospect type and the product.
-- Never break character or acknowledge you are an AI.
-- Do not end the call unless the difficulty is hard and the caller is doing poorly.`;
-}
-
-async function getProspectResponse(messages, systemPrompt) {
+async function enrichProspect(input) {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "system", content: systemPrompt }, ...messages],
-    max_tokens: 120,
-    temperature: 0.8,
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "user",
+        content: `Given this prospect description: '${input}', return a JSON object with exactly two fields:\n- displayName: a realistic short professional male name (e.g. 'James R., CEO' or 'Michael T., Executive Assistant')\n- enrichedPersona: a 2-3 sentence description of this person's professional background, personality, and how they typically behave when receiving cold calls\n\nReturn only valid JSON, no other text.`,
+      },
+    ],
+    response_format: { type: "json_object" },
   });
-  return completion.choices[0].message.content.trim();
+
+  return JSON.parse(completion.choices[0].message.content);
 }
 
-async function scoreTranscript(transcript, { product, prospectType, difficulty }) {
-  const prompt = `You are a cold call coach. Score this sales call transcript across 4 dimensions.
+// Create a Retell web call and return access_token
+app.post("/start-call", async (req, res) => {
+  console.log("start-call body:", req.body);
+  const { prospectType, difficulty, product } = req.body;
 
-Context:
-- Product: ${product}
-- Prospect type: ${prospectType}
-- Difficulty: ${difficulty}
+  try {
+    const { displayName, enrichedPersona } = await enrichProspect(prospectType);
+    console.log("Enriched prospect:", { displayName, enrichedPersona });
+
+    const requestBody = {
+      agent_id: "agent_e0700657d1382fb2ee1ac6679f",
+      metadata: { product, prospectType, difficulty },
+      retell_llm_dynamic_variables: { product, prospectType: enrichedPersona, difficulty },
+      agent_override: { voice_id: "11labs-Brian" },
+    };
+    console.log("Retell request body:", JSON.stringify(requestBody, null, 2));
+
+    const response = await fetch("https://api.retellai.com/v2/create-web-call", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.RETELL_API_KEY}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("Retell API error:", err);
+      return res.status(500).json({ error: "Failed to create call" });
+    }
+
+    const data = await response.json();
+    console.log("Retell API response:", JSON.stringify(data, null, 2));
+
+    res.json({ access_token: data.access_token, call_id: data.call_id, displayName });
+  } catch (err) {
+    console.error("start-call error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Retell webhook — score call on call_ended
+app.post("/webhook", async (req, res) => {
+  res.sendStatus(200);
+
+  const { event_type, data } = req.body;
+  if (event_type !== "call_ended") return;
+
+  const callId = data?.call_id;
+  const transcript = data?.transcript_object || data?.transcript;
+  if (!callId || !transcript) {
+    console.log("webhook: missing callId or transcript", { callId, transcript: !!transcript });
+    return;
+  }
+
+  console.log(`webhook: scoring call ${callId}`);
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: `You are a brutally honest cold call coach. Analyze this sales call transcript and score it fairly. Be strict — a score of 8+ should only go to genuinely excellent calls. Most average calls should score 4-6. Poor calls should score 1-3.
+
+Scoring criteria:
+- Opening (0-10): Did the caller introduce themselves clearly, establish credibility, and give a compelling reason for calling within the first 30 seconds? No intro = 0-2. Weak intro = 3-4. Decent = 5-6. Strong = 7-8. Exceptional = 9-10.
+- Objection Handling (0-10): Did the caller address the prospect's concerns directly and confidently? Ignored objections = 0-2. Poor handling = 3-4. Decent = 5-6. Good = 7-8. Excellent = 9-10.
+- Tone & Pace (0-10): Was the caller confident, natural, and easy to listen to? Nervous/rushed/monotone = 0-3. Okay = 4-6. Good = 7-8. Excellent = 9-10.
+- Closing (0-10): Did the caller attempt to secure a next step (meeting, follow-up, demo)? No attempt = 0-2. Weak attempt = 3-4. Decent = 5-6. Strong = 7-8. Perfect = 9-10.
+- Active Listening (0-10): Did the caller respond to what the prospect actually said or just follow a script? Ignored prospect = 0-2. Minimal = 3-4. Some = 5-6. Good = 7-8. Excellent = 9-10.
+
+If the transcript is blank, silent, or contains no meaningful sales conversation, return all scores as 0 and verdict as "No pitch detected."
+
+Return only valid JSON with these exact fields:
+{
+  "overall": (average of the 5 skill scores, one decimal),
+  "verdict": (one sentence summary of the call),
+  "talkRatio": (estimated percentage the caller was talking e.g. "62%"),
+  "objectionCount": (number of objections raised by prospect),
+  "highlights": [
+    { "type": "positive", "text": "one line about what went well" },
+    { "type": "negative", "text": "one line about what went wrong" },
+    { "type": "negative", "text": "one line about another weakness" },
+    { "type": "positive", "text": "one line about another strength" }
+  ],
+  "skills": {
+    "opening": (0-10),
+    "objectionHandling": (0-10),
+    "toneAndPace": (0-10),
+    "closing": (0-10),
+    "activeListening": (0-10)
+  }
+}
 
 Transcript:
-${transcript}
+${JSON.stringify(transcript)}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
 
-Score each dimension out of 10. For each, provide:
-- score (number)
-- grade (A, B, C, or D)
-- comment (one sentence)
+    const report = JSON.parse(completion.choices[0].message.content);
+    callReports[callId] = report;
+    console.log(`webhook: report stored for ${callId}`, report);
+  } catch (err) {
+    console.error(`webhook: scoring failed for ${callId}`, err.message);
+  }
+});
 
-Dimensions to score:
-1. Opening — did the caller establish rapport and a clear reason for calling?
-2. Objection Handling — did the caller address pushback effectively?
-3. Closing Attempt — did the caller attempt to move toward a next step?
-4. Overall Tone — was the caller confident, natural, and professional?
-
-Respond in this exact JSON format:
-{
-  "opening":            { "score": 0, "grade": "X", "comment": "..." },
-  "objectionHandling":  { "score": 0, "grade": "X", "comment": "..." },
-  "closingAttempt":     { "score": 0, "grade": "X", "comment": "..." },
-  "overallTone":        { "score": 0, "grade": "X", "comment": "..." }
-}`;
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 400,
-    temperature: 0.3,
-  });
-
-  const raw = completion.choices[0].message.content.trim();
-  return JSON.parse(raw);
-}
-
-// Active call sessions keyed by call_id
-const sessions = {};
-
-wss.on("connection", (ws) => {
-  let callId = null;
-
-  ws.on("message", async (data) => {
-    let event;
-    try {
-      event = JSON.parse(data);
-    } catch {
-      return;
-    }
-
-    const type = event.event || event.interaction_type;
-
-    // call_started / call_details
-    if (type === "call_started" || type === "call_details") {
-      const metadata = event.metadata || {};
-      callId = event.call_id;
-
-      sessions[callId] = {
-        systemPrompt: buildSystemPrompt({
-          product: metadata.product || "our product",
-          prospectType: metadata.prospectType || "business owner",
-          difficulty: metadata.difficulty || "medium",
-        }),
-        messages: [],
-        transcriptLines: [],
-        metadata,
-      };
-
-      // Prospect picks up the phone first
-      const opening = await getProspectResponse([], sessions[callId].systemPrompt);
-      sessions[callId].messages.push({ role: "assistant", content: opening });
-      sessions[callId].transcriptLines.push(`Prospect: ${opening}`);
-
-      ws.send(JSON.stringify({ event: "agent_response", agent_response: opening }));
-      return;
-    }
-
-    // Caller (salesperson) spoke
-    if (type === "transcript" || type === "speech_ended") {
-      const session = sessions[callId];
-      if (!session) return;
-
-      const callerText =
-        event.transcript || event.transcript_with_tool_calls || event.text || "";
-      if (!callerText) return;
-
-      session.messages.push({ role: "user", content: callerText });
-      session.transcriptLines.push(`Caller: ${callerText}`);
-
-      const response = await getProspectResponse(
-        session.messages,
-        session.systemPrompt
-      );
-
-      session.messages.push({ role: "assistant", content: response });
-      session.transcriptLines.push(`Prospect: ${response}`);
-
-      ws.send(JSON.stringify({ event: "agent_response", agent_response: response }));
-      return;
-    }
-
-    // Call ended — score the transcript
-    if (type === "call_ended") {
-      const session = sessions[callId];
-      if (!session) return;
-
-      const fullTranscript = session.transcriptLines.join("\n");
-
-      try {
-        const scores = await scoreTranscript(fullTranscript, session.metadata);
-        console.log(`\n=== CALL SCORED [${callId}] ===`);
-        console.log(JSON.stringify(scores, null, 2));
-        ws.send(JSON.stringify({ event: "call_scores", call_id: callId, scores }));
-      } catch (err) {
-        console.error("Scoring error:", err.message);
-      }
-
-      delete sessions[callId];
-    }
-  });
-
-  ws.on("close", () => {
-    if (callId && sessions[callId]) {
-      delete sessions[callId];
-    }
-  });
+// Get report for a call
+app.get("/report/:callId", (req, res) => {
+  const report = callReports[req.params.callId];
+  if (!report) return res.status(404).json({ error: "Report not ready" });
+  res.json(report);
 });
 
 // Health check
-app.get("/health", (req, res) => res.json({ status: "ok" }));
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-server.listen(3000, () => {
-  console.log("Cold call bot server running on port 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Cold call bot server running on port ${PORT}`);
+  console.log("PORT env:", process.env.PORT);
 });
