@@ -627,6 +627,55 @@
     #result-screen .rs-progress-track { width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
     #result-screen .rs-progress-fill { height: 100%; width: 0%; background: #00c853; border-radius: 99px; transition: width 0.8s ease; }
 
+    /* Reveal animations */
+    .reveal-fade {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal-fade.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #rs-left-content {
+      transition: opacity 0.4s ease;
+    }
+    #rs-scorecard {
+      transition: opacity 0.4s ease;
+    }
+
+    /* Skeleton shimmer */
+    .skel {
+      background: #1e1e21;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .skel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 60%, transparent 100%);
+      animation: shimmer 1.8s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .skel-eyebrow { width: 55%; height: 14px; margin-bottom: 14px; }
+    .skel-heading { width: 70%; height: 28px; margin-bottom: 12px; }
+    .skel-body1   { width: 100%; height: 13px; margin-bottom: 8px; }
+    .skel-body2   { width: 85%; height: 13px; margin-bottom: 32px; }
+    .skel-quote-bar { width: 3px; height: 60px; border-radius: 2px; flex-shrink: 0; }
+    .skel-quote-wrap { display: flex; gap: 14px; margin-bottom: 32px; }
+    .skel-quote-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+    .skel-quote-line1 { width: 90%; height: 12px; }
+    .skel-quote-line2 { width: 40%; height: 10px; }
+    .skel-next-label { width: 30%; height: 11px; margin-bottom: 14px; }
+    .skel-next-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .skel-next-circle { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+    .skel-next-line { height: 12px; border-radius: 6px; }
+
     #powered-by {
       position: fixed;
       bottom: 0;
@@ -793,120 +842,11 @@
     rotatePlaceholder();
     setInterval(rotatePlaceholder, 2000);
 
-    const WIN_PHRASES = ["set up a meeting","find some time","talk next week","send me something","15 minutes","sounds interesting","let's continue","send me something over","we'll talk","let's talk","schedule","meeting","interested","got my attention","you've got me","tell me more","follow up","reach out","connect","chat properly","discuss","worth exploring","has been interesting","actually been interesting"];
-    const LOSS_PHRASES = ["not interested","not the right fit","don't think i need","good luck","have to go","think about it"];
-    const WIN_THOUGHTS = [
-      "Finally, someone who knows their stuff.",
-      "That was actually worth my time.",
-      "They listened before they pitched.",
-      "Short, sharp, and straight to the point.",
-      "They actually understood my problem.",
-      "I didn't feel sold to. That's rare.",
-      "Okay, this might actually help us.",
-      "They earned this one.",
-    ];
-    const WIN_QUOTES = [
-      { text: "Make a customer, not a sale.", attr: "— Katherine Barchetti" },
-      { text: "Success is walking from failure to failure with no loss of enthusiasm.", attr: "— Winston Churchill" },
-      { text: "Either you run the day or the day runs you.", attr: "— Jim Rohn" },
-      { text: "The secret of getting ahead is getting started.", attr: "— Mark Twain" },
-      { text: "You don't close a sale, you open a relationship.", attr: "— Patricia Fripp" },
-      { text: "The best salespeople know they're the best. They take pride in their craft.", attr: "— Jeffrey Gitomer" },
-    ];
-
-    function determineOutcome(transcript) {
-      const agentMsgs = transcript.filter(m => m.role === "agent");
-      if (!agentMsgs.length) return false;
-      const lastMsg = agentMsgs[agentMsgs.length - 1].content.toLowerCase();
-      for (const phrase of WIN_PHRASES) {
-        if (lastMsg.includes(phrase)) return true;
-      }
-      return false;
-    }
-
-    const INNER_THOUGHTS = [
-      "Did they even Google me?",
-      "I've heard better pitches from interns.",
-      "Are they reading from a script right now?",
-      "This is painful.",
-      "I have a meeting in 2 minutes. Please stop.",
-      "Not a single question about my business.",
-      "They said 'uh' six times.",
-      "I've seen this pitch deck before. In 2019.",
-    ];
-
-    const SALES_QUOTES = [
-      { text: "Every no gets you closer to a yes.", attr: "— Unknown" },
-      { text: "The secret of getting ahead is getting started.", attr: "— Mark Twain" },
-      { text: "You miss 100% of the shots you don't take.", attr: "— Wayne Gretzky" },
-      { text: "Success is the sum of small efforts, repeated day in and day out.", attr: "— Robert Collier" },
-      { text: "Go home and think about the sale you lost today.", attr: "— Jordan Belfort" },
-      { text: "I never took a day off in my twenties. Not one.", attr: "— Bill Gates" },
-    ];
-
-    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-    function fadeIn(id, delay) {
-      setTimeout(() => document.getElementById(id).classList.add("in"), delay);
-    }
-
-    function showVerdictScreen(isWin) {
-      formView.classList.remove("call-active");
-
-      const now = new Date();
-      const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-      const m = Math.floor(timerSeconds / 60);
-      const s = String(timerSeconds % 60).padStart(2, "0");
-      const durStr = `${m}:${s}`;
-
-      document.getElementById("rs-eyebrow").textContent =
-        `${currentDisplayName || "Prospect"} · ${dateStr}`;
-      document.getElementById("rs-duration").textContent = durStr;
-      document.getElementById("rs-call-meta").textContent = `${durStr} · Today`;
-
-      if (isWin) {
-        document.getElementById("rs-heading").textContent = "They're in.";
-        document.getElementById("rs-body").textContent =
-          "You landed it. The prospect is interested — now it's about following through. Lock in the next step before momentum fades.";
-        const winQuotes = [
-          { text: "Every sale has five basic obstacles: no need, no money, no hurry, no desire, no trust.", attr: "— Zig Ziglar" },
-          { text: "The secret of getting ahead is getting started.", attr: "— Mark Twain" },
-          { text: "Sales are contingent upon the attitude of the salesman, not the attitude of the prospect.", attr: "— W. Clement Stone" },
-        ];
-        const q = winQuotes[Math.floor(Math.random() * winQuotes.length)];
-        document.getElementById("rs-quote-text").textContent = `"${q.text}"`;
-        document.getElementById("rs-quote-attr").textContent = q.attr;
-        document.getElementById("rs-next-1").textContent = "Send a follow-up email within the hour while you're top of mind.";
-        document.getElementById("rs-next-2").textContent = "Book the next meeting before they have time to cool off.";
-        document.getElementById("rs-next-3").textContent = "Review what worked — replicate it on your next call.";
-
-        setTimeout(() => {
-          if (typeof confetti === "function") {
-            confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#00c853', '#ffffff', '#00a040'], ticks: 150 });
-          }
-        }, 300);
-      } else {
-        document.getElementById("rs-heading").textContent = "Not this time — but you were close.";
-        document.getElementById("rs-body").textContent =
-          "It didn't land today, but every rep builds the muscle. Review the call, spot the turning point, and go again sharper.";
-        const lossQuotes = [
-          { text: "I never lose. I either win or learn.", attr: "— Nelson Mandela" },
-          { text: "Most people give up just when they're about to achieve success.", attr: "— Ross Perot" },
-          { text: "The difference between a successful person and others is not a lack of strength, not a lack of knowledge, but rather a lack of will.", attr: "— Vince Lombardi" },
-        ];
-        const q = lossQuotes[Math.floor(Math.random() * lossQuotes.length)];
-        document.getElementById("rs-quote-text").textContent = `"${q.text}"`;
-        document.getElementById("rs-quote-attr").textContent = q.attr;
-        document.getElementById("rs-next-1").textContent = "Identify the exact moment the prospect disengaged — that's your lesson.";
-        document.getElementById("rs-next-2").textContent = "Practice your opener and value prop until they're second nature.";
-        document.getElementById("rs-next-3").textContent = "Try a different prospect type or difficulty and apply what you learned.";
-      }
-
-      document.getElementById("result-screen").classList.add("visible");
-    }
 
     function resetFromVerdict() {
       document.getElementById("result-screen").classList.remove("visible");
+      // Reset left panel loading state
+      hideLeftLoading();
       // Reset call state
       callActive = false;
       retellWebClient = null;
@@ -970,18 +910,19 @@
     }
 
     async function fetchReport(callId) {
-      showLoadingState();
       try {
         const res = await fetch(`/report/${callId}`);
         if (res.ok) {
           const report = await res.json();
           currentReport = report;
+          populateVerdictFromReport(report);
           populateReport(report);
           return;
         }
       } catch (e) {
         console.error("Failed to fetch report:", e);
       }
+      hideLeftLoading();
       stopLoadingState();
       document.querySelector("#result-screen .rs-right").classList.remove("loading");
     }
@@ -991,6 +932,14 @@
       stopLoadingState();
       document.querySelector("#result-screen .rs-right").classList.remove("loading");
 
+      // Prepare scorecard children for staggered reveal
+      const scorecard = document.getElementById("rs-scorecard");
+      const scChildren = scorecard.querySelectorAll(":scope > *");
+      scChildren.forEach(el => {
+        el.classList.add("reveal-fade");
+        el.classList.remove("in");
+      });
+
       // Score circle — update value but keep blurred until unlocked
       const score = typeof report.overall === "number" ? report.overall : parseFloat(report.overall);
       const circumference = 238.8;
@@ -999,7 +948,7 @@
       arc.setAttribute("stroke-dashoffset", dashoffset);
       document.getElementById("rs-score-val").textContent = score.toFixed(1);
 
-      // Duration already set by showVerdictScreen; stats
+      // Stats
       document.getElementById("rs-talk-ratio").textContent = report.talkRatio || "—";
       document.getElementById("rs-objections").textContent = report.objectionCount ?? "—";
 
@@ -1046,6 +995,12 @@
         const bodyEl = document.getElementById("rs-body");
         if (bodyEl) bodyEl.textContent = report.verdict;
       }
+
+      // Stagger scorecard children reveal
+      scorecard.offsetHeight;
+      scChildren.forEach((el, i) => {
+        setTimeout(() => el.classList.add("in"), i * 100);
+      });
     }
 
     async function rsStartCheckout() {
@@ -1291,7 +1246,30 @@
       doc.save("coldtalk-report.pdf");
     }
 
-    // Populate the left-side verdict panel from report data (used on Stripe return)
+    function showLeftLoading() {
+      document.getElementById("rs-left-loading").style.display = "";
+      document.getElementById("rs-left-content").style.display = "none";
+    }
+
+    function hideLeftLoading() {
+      document.getElementById("rs-left-loading").style.display = "none";
+      const content = document.getElementById("rs-left-content");
+      content.style.display = "";
+
+      // Add reveal-fade class to direct children, then stagger them in
+      const children = content.querySelectorAll(":scope > *");
+      children.forEach(el => {
+        el.classList.add("reveal-fade");
+        el.classList.remove("in");
+      });
+      // Force reflow so the initial state is painted
+      content.offsetHeight;
+      children.forEach((el, i) => {
+        setTimeout(() => el.classList.add("in"), i * 120);
+      });
+    }
+
+    // Populate the left-side verdict panel from report data
     function populateVerdictFromReport(report) {
       const meta = report.meta || {};
       const score = typeof report.overall === "number" ? report.overall : parseFloat(report.overall);
@@ -1300,18 +1278,19 @@
       const now = new Date();
       const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-      // Duration
+      // Duration — prefer client-side timer, fall back to Retell metadata
+      const sec = timerSeconds || meta.durationSec || 0;
       let durStr = "—";
-      if (meta.durationSec) {
-        const m = Math.floor(meta.durationSec / 60);
-        const s = String(meta.durationSec % 60).padStart(2, "0");
+      if (sec > 0) {
+        const m = Math.floor(sec / 60);
+        const s = String(sec % 60).padStart(2, "0");
         durStr = `${m}:${s}`;
       }
       document.getElementById("rs-duration").textContent = durStr;
       document.getElementById("rs-call-meta").textContent = `${durStr} · Today`;
 
       // Eyebrow
-      const name = meta.prospectName || "Prospect";
+      const name = currentDisplayName || meta.prospectName || "Prospect";
       document.getElementById("rs-eyebrow").textContent = `${name} · ${dateStr}`;
 
       // Heading & body
@@ -1347,6 +1326,16 @@
         document.getElementById("rs-next-1").textContent = "Identify the exact moment the prospect disengaged — that's your lesson.";
         document.getElementById("rs-next-2").textContent = "Practice your opener and value prop until they're second nature.";
         document.getElementById("rs-next-3").textContent = "Try a different prospect type or difficulty and apply what you learned.";
+      }
+
+      hideLeftLoading();
+
+      if (isWin) {
+        setTimeout(() => {
+          if (typeof confetti === "function") {
+            confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#00c853', '#ffffff', '#00a040'], ticks: 150 });
+          }
+        }, 400);
       }
     }
 
@@ -1488,8 +1477,14 @@
           callActive = false;
           retellWebClient = null;
           clearInterval(timerInterval);
-          const isWin = determineOutcome(lastTranscript);
-          showVerdictScreen(isWin);
+          formView.classList.remove("call-active");
+
+          // Show result screen immediately with both panels loading
+          document.getElementById("result-screen").classList.add("visible");
+          showLeftLoading();
+          showLoadingState();
+
+          // Fetch the report — populates both panels when ready
           if (currentCallId) fetchReport(currentCallId);
         });
 
@@ -1516,6 +1511,26 @@
       <!-- Left: verdict copy -->
       <div class="rs-left">
         <div class="rs-logo">cold<span>talk</span></div>
+        <!-- Left skeleton loader -->
+        <div id="rs-left-loading" style="display:none; flex:1; padding-top:2rem;">
+          <div class="skel skel-eyebrow"></div>
+          <div class="skel skel-heading"></div>
+          <div class="skel skel-body1"></div>
+          <div class="skel skel-body2"></div>
+          <div class="skel-quote-wrap">
+            <div class="skel skel-quote-bar"></div>
+            <div class="skel-quote-lines">
+              <div class="skel skel-quote-line1"></div>
+              <div class="skel skel-quote-line2"></div>
+            </div>
+          </div>
+          <div class="skel skel-next-label"></div>
+          <div class="skel-next-row"><div class="skel skel-next-circle"></div><div class="skel skel-next-line" style="width:85%;"></div></div>
+          <div class="skel-next-row"><div class="skel skel-next-circle"></div><div class="skel skel-next-line" style="width:75%;"></div></div>
+          <div class="skel-next-row"><div class="skel skel-next-circle"></div><div class="skel skel-next-line" style="width:80%;"></div></div>
+        </div>
+        <!-- Left verdict content (hidden while loading) -->
+        <div id="rs-left-content" style="display:none;">
         <div>
           <div class="rs-eyebrow" id="rs-eyebrow"></div>
           <div class="rs-heading" id="rs-heading"></div>
@@ -1531,6 +1546,7 @@
           <div class="rs-next-item"><div class="rs-next-num">2</div><div class="rs-next-text" id="rs-next-2"></div></div>
           <div class="rs-next-item"><div class="rs-next-num">3</div><div class="rs-next-text" id="rs-next-3"></div></div>
         </div>
+        </div><!-- close rs-left-content -->
         <button class="rs-try-again" id="rs-try-again">Try again</button>
         <div class="rs-left-footer">coldtalk &nbsp;·&nbsp; Your AI cold call coach</div>
       </div>
