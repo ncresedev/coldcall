@@ -9,6 +9,13 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>window.addEventListener("load", () => console.log("confetti loaded:", typeof confetti));</script>
+  <script>
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "w95rxdgobp");
+  </script>
   <style>
     * {
       margin: 0;
@@ -502,25 +509,8 @@
 
       /* Left panel */
       #result-screen .rs-left {
-        padding: 1.5rem 1.25rem 2rem;
+        padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
         border-right: none;
-        border-bottom: 0.5px solid var(--rs-border);
-      }
-      #result-screen .rs-logo {
-        margin-bottom: 1.5rem;
-      }
-      #result-screen .rs-heading {
-        font-size: 20px;
-      }
-      #result-screen .rs-quote-block {
-        margin-bottom: 1.5rem;
-      }
-      #result-screen .rs-try-again {
-        width: 100%;
-        text-align: center;
-      }
-      #result-screen .rs-left-footer {
-        padding-top: 1.5rem;
       }
 
       /* Right panel */
@@ -555,27 +545,19 @@
     #result-screen .rs-left {
       background: var(--rs-bg-surface);
       border-right: 0.5px solid var(--rs-border);
-      padding: 2.5rem 2rem;
+      padding: 2.5rem;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
-    #result-screen .rs-logo { font-size: 15px; font-weight: 500; color: var(--rs-text-primary); margin-bottom: 2.5rem; }
-    #result-screen .rs-logo span { color: var(--rs-green); }
-    #result-screen .rs-eyebrow { font-size: 11px; color: var(--rs-green-text); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 8px; }
-    #result-screen .rs-heading { font-size: 24px; font-weight: 500; color: var(--rs-text-primary); line-height: 1.35; margin-bottom: 10px; }
-    #result-screen .rs-body { font-size: 13px; color: var(--rs-text-secondary); line-height: 1.75; margin-bottom: 2rem; }
-    #result-screen .rs-quote-block { border-left: 2px solid var(--rs-green-dim); padding-left: 14px; margin-bottom: 2rem; }
-    #result-screen .rs-quote-text { font-size: 13px; color: rgba(240,239,233,0.6); line-height: 1.7; font-style: italic; }
-    #result-screen .rs-quote-attr { font-size: 11px; color: var(--rs-green-text); margin-top: 6px; }
-    #result-screen .rs-next-label { font-size: 11px; color: var(--rs-text-tertiary); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; }
-    #result-screen .rs-next-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
-    #result-screen .rs-next-num { width: 20px; height: 20px; border-radius: 50%; border: 0.5px solid var(--rs-border-mid); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--rs-green-text); flex-shrink: 0; }
-    #result-screen .rs-next-text { font-size: 13px; color: var(--rs-text-secondary); line-height: 1.55; padding-top: 1px; }
-    #result-screen .rs-try-again { margin-top: 1.5rem; padding: 12px 32px; background: var(--rs-green); color: #0a1f16; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; align-self: flex-start; }
-    #result-screen .rs-try-again:hover { background: #5dcba0; }
-    #result-screen .rs-left-footer { font-size: 11px; color: var(--rs-text-tertiary); margin-top: auto; padding-top: 2rem; }
+    /* On desktop, hide the "Show my full report" button — the right panel CTA handles it */
+    @media (min-width: 681px) {
+      .rs-gam-report-btn { display: none; }
+    }
 
-    #result-screen .rs-right { background: var(--rs-bg-base); padding: 2rem 1.5rem; overflow-y: auto; }
+    #result-screen .rs-right { background: var(--rs-bg-base); padding: 2.5rem; overflow-y: auto; }
     #result-screen .rs-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
     #result-screen .rs-topbar-label { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #F0EFE9; letter-spacing: -0.01em; }
     #result-screen .rs-call-meta { display: inline-block; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: #4ABA8A; background: rgba(74,186,138,0.1); border: 0.5px solid rgba(74,186,138,0.3); border-radius: 20px; padding: 4px 10px; letter-spacing: 0.02em; }
@@ -611,9 +593,12 @@
     #result-screen .rs-bar-fill { height: 100%; border-radius: 99px; }
     #result-screen .rs-bar-fill.locked { background: var(--rs-bg-hover); }
     #result-screen .rs-lock-banner { background: rgba(74,186,138,0.06); border: 0.5px solid rgba(74,186,138,0.15); border-radius: 8px; padding: 10px 12px; margin: 1rem 0; text-align: center; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400; color: #4ABA8A; }
-    #result-screen .rs-cta-btn { width: 100%; padding: 13px; background: #4ABA8A; color: #0a1f16; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; transition: background 0.15s; }
+    #result-screen .rs-cta-btn { width: 100%; padding: 14px; background: #4ABA8A; color: #0a1f16; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; transition: background 0.15s; position: relative; overflow: hidden; }
     #result-screen .rs-cta-btn:hover { background: #5dcba0; }
-    #result-screen .rs-price-note { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 400; color: #4A4A50; text-align: center; margin-top: 7px; }
+    #result-screen .rs-cta-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); animation: btn-shimmer 2.5s ease-in-out infinite; }
+    #result-screen .rs-cta-btn.unlocked { background: var(--rs-bg-raised); color: var(--rs-text-primary); }
+    #result-screen .rs-cta-btn.unlocked::after { display: none; }
+    #result-screen .rs-cta-btn.unlocked:hover { background: var(--rs-bg-hover); }
     #result-screen .rs-download-btn { display: none; width: 100%; margin-top: 8px; padding: 11px; background: transparent; border: 0.5px solid rgba(74,186,138,0.4); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: #4ABA8A; cursor: pointer; transition: background 0.15s; }
     #result-screen .rs-download-btn:hover { background: rgba(74,186,138,0.08); }
 
@@ -637,44 +622,11 @@
       opacity: 1;
       transform: translateY(0);
     }
-    #rs-left-content {
-      transition: opacity 0.4s ease;
-    }
     #rs-scorecard {
       transition: opacity 0.4s ease;
     }
 
-    /* Skeleton shimmer */
-    .skel {
-      background: #1e1e21;
-      border-radius: 6px;
-      position: relative;
-      overflow: hidden;
-    }
-    .skel::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 60%, transparent 100%);
-      animation: shimmer 1.8s ease-in-out infinite;
-    }
-    @keyframes shimmer {
-      0%   { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    .skel-eyebrow { width: 55%; height: 14px; margin-bottom: 14px; }
-    .skel-heading { width: 70%; height: 28px; margin-bottom: 12px; }
-    .skel-body1   { width: 100%; height: 13px; margin-bottom: 8px; }
-    .skel-body2   { width: 85%; height: 13px; margin-bottom: 32px; }
-    .skel-quote-bar { width: 3px; height: 60px; border-radius: 2px; flex-shrink: 0; }
-    .skel-quote-wrap { display: flex; gap: 14px; margin-bottom: 32px; }
-    .skel-quote-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
-    .skel-quote-line1 { width: 90%; height: 12px; }
-    .skel-quote-line2 { width: 40%; height: 10px; }
-    .skel-next-label { width: 30%; height: 11px; margin-bottom: 14px; }
-    .skel-next-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .skel-next-circle { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
-    .skel-next-line { height: 12px; border-radius: 6px; }
+    /* Reveal animations (used for scorecard) */
 
     #powered-by {
       position: fixed;
@@ -688,6 +640,392 @@
       text-decoration: none;
       z-index: 50;
     }
+
+    /* ── Gamified left panel (shared mobile + desktop) ── */
+    .rs-gam-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      flex: 1;
+      justify-content: center;
+    }
+    .rs-gam-loading-ring {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: 3px solid rgba(74,186,138,0.15);
+      border-top-color: #4ABA8A;
+      animation: gam-spin 0.8s linear infinite;
+    }
+    @keyframes gam-spin { to { transform: rotate(360deg); } }
+    .rs-gam-loading-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--rs-text-secondary);
+    }
+    .rs-gam-content {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      animation: gam-reveal 0.5s ease;
+    }
+    #result-screen .rs-left.loaded .rs-gam-loading { display: none; }
+    #result-screen .rs-left.loaded .rs-gam-content { display: flex; }
+    @keyframes gam-reveal {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .rs-gam-icon {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .rs-gam-icon.win { background: #1a6b4a; }
+    .rs-gam-icon.loss { background: #6b1a1a; }
+    .rs-gam-icon svg { width: 30px; height: 30px; }
+    .rs-gam-badge {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+    }
+    .rs-gam-badge.win { color: #4ABA8A; background: rgba(74,186,138,0.15); }
+    .rs-gam-badge.loss { color: #E05555; background: rgba(224,85,85,0.15); }
+    .rs-gam-heading {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--rs-text-primary);
+      margin-bottom: 8px;
+    }
+    .rs-gam-feedback {
+      font-size: 14px;
+      color: var(--rs-text-secondary);
+      line-height: 1.65;
+      max-width: 320px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .rs-gam-wrong {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(224,85,85,0.05);
+      border: 1px solid rgba(224,85,85,0.18);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 22px;
+      text-align: left;
+    }
+    .rs-gam-wrong-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #E05555;
+      margin-bottom: 8px;
+    }
+    .rs-gam-wrong-text {
+      font-size: 13px;
+      color: var(--rs-text-secondary);
+      line-height: 1.55;
+      font-style: italic;
+    }
+    .rs-gam-stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+      width: 100%;
+      max-width: 360px;
+    }
+    .rs-gam-stat {
+      flex: 1;
+      background: var(--rs-bg-base);
+      border: 1px solid var(--rs-border);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+    .rs-gam-stat-val {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .rs-gam-stat-val.win { color: var(--rs-green); }
+    .rs-gam-stat-val.loss { color: #E05555; }
+    .rs-gam-stat-val.diff-easy { color: #4ABA8A; }
+    .rs-gam-stat-val.diff-medium { color: #ff9100; }
+    .rs-gam-stat-val.diff-hard { color: #f44336; }
+    .rs-gam-stat-lbl {
+      font-size: 11px;
+      color: var(--rs-text-tertiary);
+    }
+    .rs-gam-actions {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .rs-gam-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .rs-gam-btn-primary {
+      background: var(--rs-bg-base);
+      border: 1px solid var(--rs-border-mid);
+      color: var(--rs-text-primary);
+    }
+    .rs-gam-btn-primary:hover { background: var(--rs-bg-raised); }
+    .rs-gam-btn-secondary {
+      background: transparent;
+      border: 1px solid var(--rs-border);
+      color: var(--rs-text-secondary);
+    }
+    .rs-gam-btn-secondary:hover { border-color: var(--rs-border-mid); }
+    .rs-gam-report-btn {
+      width: 100%;
+      max-width: 360px;
+      margin-top: 4px;
+      padding: 15px;
+      background: var(--rs-green);
+      color: #0a1f16;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .rs-gam-report-btn:hover { background: #5dcba0; }
+    .rs-gam-report-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      animation: btn-shimmer 2.5s ease-in-out infinite;
+    }
+    @keyframes btn-shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .rs-gam-footer {
+      font-size: 11px;
+      color: var(--rs-text-tertiary);
+      margin-top: auto;
+      padding-top: 1.5rem;
+    }
+
+    /* Mobile: hide right panel initially, full-width left panel */
+    @media (max-width: 680px) {
+      #result-screen .rs-left {
+        min-height: 100vh;
+        min-height: 100svh;
+        padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+      }
+      #result-screen:not(.report-view) .rs-right {
+        display: none;
+      }
+      /* Report view mode: hide left, show right */
+      #result-screen.report-view .rs-left { display: none; }
+      #result-screen.report-view .rs-right {
+        display: block;
+        min-height: 100vh;
+        padding-top: 1rem;
+      }
+    }
+
+    /* ── Mobile report back button ── */
+    .rs-back-btn {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--rs-green);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 8px 0;
+      margin-bottom: 12px;
+    }
+    .rs-back-btn svg { width: 16px; height: 16px; }
+    @media (max-width: 680px) {
+      #result-screen.report-view .rs-back-btn { display: flex; }
+    }
+
+    /* ── Newsletter modal ── */
+    .nl-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 400;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .nl-overlay.visible { display: flex; }
+    @media (min-width: 681px) {
+      .nl-overlay { align-items: center; }
+    }
+    .nl-sheet {
+      background: #161618;
+      border-radius: 20px 20px 0 0;
+      padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: nl-slide-up 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    @media (min-width: 681px) {
+      .nl-sheet { border-radius: 16px; max-width: 400px; }
+    }
+    @keyframes nl-slide-up {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .nl-handle {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      cursor: pointer;
+    }
+    .nl-handle-bar {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 99px;
+    }
+    .nl-icon {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(74,186,138,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .nl-icon svg { width: 24px; height: 24px; }
+    .nl-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #F0EFE9;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .nl-subtitle {
+      font-size: 13px;
+      color: #8A8A8F;
+      text-align: center;
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+    .nl-field {
+      margin-bottom: 12px;
+    }
+    .nl-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #8A8A8F;
+      margin-bottom: 6px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .nl-field input {
+      width: 100%;
+      background: #0E0E0F;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 13px 14px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .nl-field input:focus { border-color: rgba(74,186,138,0.5); }
+    .nl-field input::placeholder { color: #3a3a3a; }
+    .nl-submit {
+      width: 100%;
+      padding: 14px;
+      background: #4ABA8A;
+      color: #0a1f16;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 6px;
+    }
+    .nl-submit:hover { background: #5dcba0; }
+    .nl-submit:disabled { background: #2D7A5A; cursor: not-allowed; }
+    .nl-note {
+      font-size: 11px;
+      color: #4A4A50;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    .nl-success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0;
+      animation: mob-reveal 0.4s ease;
+    }
+    .nl-success.visible { display: flex; }
+    .nl-success-icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: rgba(74,186,138,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .nl-success-icon svg { width: 28px; height: 28px; }
+    .nl-success-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #F0EFE9;
+      margin-bottom: 6px;
+    }
+    .nl-success-sub {
+      font-size: 13px;
+      color: #8A8A8F;
+      margin-bottom: 20px;
+    }
+    .nl-success-btn {
+      padding: 13px 32px;
+      background: #4ABA8A;
+      color: #0a1f16;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .nl-success-btn:hover { background: #5dcba0; }
+
   </style>
 </head>
 <body>
@@ -844,9 +1182,19 @@
 
 
     function resetFromVerdict() {
-      document.getElementById("result-screen").classList.remove("visible");
-      // Reset left panel loading state
-      hideLeftLoading();
+      const rs = document.getElementById("result-screen");
+      rs.classList.remove("visible", "report-view");
+      // Reset newsletter modal
+      document.getElementById("nl-overlay").classList.remove("visible");
+      // Reset gamified left panel
+      document.getElementById("rs-left").classList.remove("loaded");
+      document.getElementById("rs-gam-wrong").style.display = "none";
+      // Reset right panel CTA
+      const cta = document.getElementById("rs-cta-btn");
+      cta.textContent = "Unlock my full report \u2192";
+      cta.classList.remove("unlocked");
+      cta.onclick = openNewsletterModal;
+      document.getElementById("rs-download-btn").style.display = "none";
       // Reset call state
       callActive = false;
       retellWebClient = null;
@@ -990,11 +1338,7 @@
         openScore.textContent = openScore.dataset.realScore || openScore.textContent;
       }
 
-      // Left side verdict body
-      if (report.verdict) {
-        const bodyEl = document.getElementById("rs-body");
-        if (bodyEl) bodyEl.textContent = report.verdict;
-      }
+      // Verdict is shown in gamified panel via populateVerdictFromReport
 
       // Stagger scorecard children reveal
       scorecard.offsetHeight;
@@ -1003,29 +1347,54 @@
       });
     }
 
-    async function rsStartCheckout() {
-      const btn = document.getElementById("rs-cta-btn");
-      btn.textContent = "Redirecting...";
+    // ── Newsletter / unlock flow (shared for mobile + desktop) ──
+    function openNewsletterModal() {
+      document.getElementById("nl-form-content").style.display = "";
+      document.getElementById("nl-success").classList.remove("visible");
+      document.getElementById("nl-name").value = "";
+      document.getElementById("nl-email").value = "";
+      document.getElementById("nl-submit-btn").disabled = false;
+      document.getElementById("nl-submit-btn").textContent = "Get my report \u2192";
+      document.getElementById("nl-overlay").classList.add("visible");
+    }
+
+    function closeNewsletterModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById("nl-overlay").classList.remove("visible");
+    }
+
+    async function submitNewsletterForm() {
+      const name = document.getElementById("nl-name").value.trim();
+      const email = document.getElementById("nl-email").value.trim();
+      const btn = document.getElementById("nl-submit-btn");
+      if (!email) { alert("Please enter your email."); return; }
       btn.disabled = true;
+      btn.textContent = "Unlocking...";
       try {
-        const res = await fetch("/create-checkout", {
+        await fetch("/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ callId: currentCallId }),
+          body: JSON.stringify({ name, email, callId: currentCallId }),
         });
-        const { url, error } = await res.json();
-        if (url) {
-          window.location.href = url;
-        } else {
-          alert("Checkout failed: " + (error || "Unknown error"));
-          btn.textContent = "Unlock my full debrief \u2192";
-          btn.disabled = false;
-        }
+        document.getElementById("nl-form-content").style.display = "none";
+        document.getElementById("nl-success").classList.add("visible");
       } catch (e) {
-        console.error("Checkout error:", e);
-        btn.textContent = "Unlock my full debrief \u2192";
+        console.error("Subscribe error:", e);
         btn.disabled = false;
+        btn.textContent = "Try again";
       }
+    }
+
+    function showUnlockedReport() {
+      closeNewsletterModal();
+      rsUnlockScorecard();
+      // On mobile, switch to report view
+      document.getElementById("result-screen").classList.add("report-view");
+      document.getElementById("result-screen").scrollTop = 0;
+    }
+
+    function hideReportView() {
+      document.getElementById("result-screen").classList.remove("report-view");
     }
 
     function rsUnlockScorecard() {
@@ -1062,14 +1431,11 @@
       banner.textContent = "Full report unlocked ✓";
       banner.style.cssText = "background:rgba(74,186,138,0.1);border:0.5px solid rgba(74,186,138,0.4);border-radius:8px;padding:10px 12px;margin:1rem 0;text-align:center;font-size:13px;font-weight:500;color:#4ABA8A;";
 
-      // 6. Replace CTA button with Try again + show download button
+      // 6. Update CTA button + show download button
       const cta = document.getElementById("rs-cta-btn");
       cta.textContent = "Try again";
+      cta.classList.add("unlocked");
       cta.onclick = resetFromVerdict;
-      cta.style.background = "#1E1E21";
-      cta.style.color = "#F0EFE9";
-      cta.style.letterSpacing = "0";
-      document.getElementById("rs-price-note").style.display = "none";
       document.getElementById("rs-download-btn").style.display = "block";
 
       // 7. Reveal score circle
@@ -1247,38 +1613,20 @@
     }
 
     function showLeftLoading() {
-      document.getElementById("rs-left-loading").style.display = "";
-      document.getElementById("rs-left-content").style.display = "none";
+      document.getElementById("rs-left").classList.remove("loaded");
     }
 
     function hideLeftLoading() {
-      document.getElementById("rs-left-loading").style.display = "none";
-      const content = document.getElementById("rs-left-content");
-      content.style.display = "";
-
-      // Add reveal-fade class to direct children, then stagger them in
-      const children = content.querySelectorAll(":scope > *");
-      children.forEach(el => {
-        el.classList.add("reveal-fade");
-        el.classList.remove("in");
-      });
-      // Force reflow so the initial state is painted
-      content.offsetHeight;
-      children.forEach((el, i) => {
-        setTimeout(() => el.classList.add("in"), i * 120);
-      });
+      document.getElementById("rs-left").classList.add("loaded");
     }
 
-    // Populate the left-side verdict panel from report data
+    // Populate the gamified left panel from report data
     function populateVerdictFromReport(report) {
       const meta = report.meta || {};
-      const score = typeof report.overall === "number" ? report.overall : parseFloat(report.overall);
-      const isWin = score >= 6;
+      // Use meetingBooked from AI analysis as the win/loss criterion
+      const isWin = report.meetingBooked === true;
 
-      const now = new Date();
-      const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-
-      // Duration — prefer client-side timer, fall back to Retell metadata
+      // Duration
       const sec = timerSeconds || meta.durationSec || 0;
       let durStr = "—";
       if (sec > 0) {
@@ -1289,45 +1637,53 @@
       document.getElementById("rs-duration").textContent = durStr;
       document.getElementById("rs-call-meta").textContent = `${durStr} · Today`;
 
-      // Eyebrow
-      const name = currentDisplayName || meta.prospectName || "Prospect";
-      document.getElementById("rs-eyebrow").textContent = `${name} · ${dateStr}`;
+      // Gamified icon
+      const gamIcon = document.getElementById("rs-gam-icon");
+      gamIcon.className = "rs-gam-icon " + (isWin ? "win" : "loss");
+      document.getElementById("rs-gam-icon-check").style.display = isWin ? "" : "none";
+      document.getElementById("rs-gam-icon-x").style.display = isWin ? "none" : "";
 
-      // Heading & body
-      if (isWin) {
-        document.getElementById("rs-heading").textContent = "They're in.";
+      // Badge
+      const gamBadge = document.getElementById("rs-gam-badge");
+      gamBadge.className = "rs-gam-badge " + (isWin ? "win" : "loss");
+      gamBadge.textContent = isWin ? "Meeting booked" : "Meeting lost";
+
+      // Heading
+      document.getElementById("rs-gam-heading").textContent = isWin ? "Nice close" : "They hung up";
+
+      // Feedback
+      document.getElementById("rs-gam-feedback").textContent = report.verdict || "";
+
+      // Where it went wrong (loss only)
+      const gamWrong = document.getElementById("rs-gam-wrong");
+      if (!isWin && report.highlights) {
+        const neg = report.highlights.find(h => h.type === "negative");
+        if (neg) {
+          document.getElementById("rs-gam-wrong-text").textContent = `"${neg.text}"`;
+          gamWrong.style.display = "";
+        } else {
+          gamWrong.style.display = "none";
+        }
       } else {
-        document.getElementById("rs-heading").textContent = "Not this time — but you were close.";
-      }
-      // Body gets overwritten by populateReport with the verdict
-
-      // Quote
-      const winQuotes = [
-        { text: "Sales are contingent upon the attitude of the salesman, not the attitude of the prospect.", attr: "— W. Clement Stone" },
-        { text: "The secret of getting ahead is getting started.", attr: "— Mark Twain" },
-        { text: "Make a customer, not a sale.", attr: "— Katherine Barchetti" },
-      ];
-      const lossQuotes = [
-        { text: "I never lose. I either win or learn.", attr: "— Nelson Mandela" },
-        { text: "Most people give up just when they're about to achieve success.", attr: "— Ross Perot" },
-        { text: "The difference between a successful person and others is not a lack of strength, not a lack of knowledge, but rather a lack of will.", attr: "— Vince Lombardi" },
-      ];
-      const quotes = isWin ? winQuotes : lossQuotes;
-      const q = quotes[Math.floor(Math.random() * quotes.length)];
-      document.getElementById("rs-quote-text").textContent = `"${q.text}"`;
-      document.getElementById("rs-quote-attr").textContent = q.attr;
-
-      // Next steps
-      if (isWin) {
-        document.getElementById("rs-next-1").textContent = "Send a follow-up email within the hour while you're top of mind.";
-        document.getElementById("rs-next-2").textContent = "Book the next meeting before they have time to cool off.";
-        document.getElementById("rs-next-3").textContent = "Review what worked — replicate it on your next call.";
-      } else {
-        document.getElementById("rs-next-1").textContent = "Identify the exact moment the prospect disengaged — that's your lesson.";
-        document.getElementById("rs-next-2").textContent = "Practice your opener and value prop until they're second nature.";
-        document.getElementById("rs-next-3").textContent = "Try a different prospect type or difficulty and apply what you learned.";
+        gamWrong.style.display = "none";
       }
 
+      // Duration stat
+      const gamDur = document.getElementById("rs-gam-duration");
+      gamDur.textContent = durStr;
+      gamDur.className = "rs-gam-stat-val " + (isWin ? "win" : "loss");
+
+      // Difficulty stat
+      const diff = selections.difficulty || "medium";
+      const gamDiff = document.getElementById("rs-gam-difficulty");
+      gamDiff.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+      gamDiff.className = "rs-gam-stat-val diff-" + diff;
+
+      // Action button: win → "Try harder prospect", loss → "Try again"
+      const btnAction = document.getElementById("rs-gam-btn-action");
+      btnAction.textContent = isWin ? "Try harder prospect" : "Try again";
+
+      // Show gamified content
       hideLeftLoading();
 
       if (isWin) {
@@ -1339,49 +1695,7 @@
       }
     }
 
-    // Bind after DOM is fully parsed + handle Stripe return
-    document.addEventListener("DOMContentLoaded", async () => {
-      const tryAgain = document.getElementById("rs-try-again");
-      if (tryAgain) tryAgain.addEventListener("click", resetFromVerdict);
-
-      // Handle return from Stripe Checkout
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("paid") === "true" && params.get("call_id") && params.get("session_id")) {
-        const callId = params.get("call_id");
-        const sessionId = params.get("session_id");
-        currentCallId = callId;
-
-        // Clean URL
-        window.history.replaceState({}, "", "/");
-
-        // Show result screen with loading
-        document.getElementById("result-screen").classList.add("visible");
-        showLoadingState();
-
-        try {
-          // Verify payment
-          const payRes = await fetch(`/verify-payment/${callId}?session_id=${sessionId}`);
-          const { paid } = await payRes.json();
-
-          // Fetch the report
-          const reportRes = await fetch(`/report/${callId}`);
-          if (reportRes.ok) {
-            const report = await reportRes.json();
-            currentReport = report;
-            populateVerdictFromReport(report);
-            populateReport(report);
-          }
-
-          if (paid) {
-            rsUnlockScorecard();
-          }
-        } catch (e) {
-          console.error("Post-payment error:", e);
-          stopLoadingState();
-          document.querySelector("#result-screen .rs-right").classList.remove("loading");
-        }
-      }
-    });
+    document.addEventListener("DOMContentLoaded", () => {});
 
     function selectPill(pill) {
       const group = pill.dataset.group;
@@ -1479,7 +1793,7 @@
           clearInterval(timerInterval);
           formView.classList.remove("call-active");
 
-          // Show result screen immediately with both panels loading
+          // Show result screen immediately with loading
           document.getElementById("result-screen").classList.add("visible");
           showLeftLoading();
           showLoadingState();
@@ -1506,53 +1820,53 @@
 
   <!-- Result screen -->
   <div id="result-screen">
+
     <div class="rs-split">
 
-      <!-- Left: verdict copy -->
-      <div class="rs-left">
-        <div class="rs-logo">cold<span>talk</span></div>
-        <!-- Left skeleton loader -->
-        <div id="rs-left-loading" style="display:none; flex:1; padding-top:2rem;">
-          <div class="skel skel-eyebrow"></div>
-          <div class="skel skel-heading"></div>
-          <div class="skel skel-body1"></div>
-          <div class="skel skel-body2"></div>
-          <div class="skel-quote-wrap">
-            <div class="skel skel-quote-bar"></div>
-            <div class="skel-quote-lines">
-              <div class="skel skel-quote-line1"></div>
-              <div class="skel skel-quote-line2"></div>
+      <!-- Left: gamified result -->
+      <div class="rs-left" id="rs-left">
+        <!-- Loading spinner -->
+        <div class="rs-gam-loading">
+          <div class="rs-gam-loading-ring"></div>
+          <div class="rs-gam-loading-text">Analyzing your call...</div>
+        </div>
+        <!-- Gamified content (shown after report loads) -->
+        <div class="rs-gam-content">
+          <div class="rs-gam-icon win" id="rs-gam-icon">
+            <svg id="rs-gam-icon-check" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg id="rs-gam-icon-x" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="rs-gam-badge win" id="rs-gam-badge">Meeting locked</div>
+          <h2 class="rs-gam-heading" id="rs-gam-heading">Nice close</h2>
+          <p class="rs-gam-feedback" id="rs-gam-feedback"></p>
+          <div class="rs-gam-wrong" id="rs-gam-wrong" style="display:none">
+            <div class="rs-gam-wrong-label">where it went wrong</div>
+            <div class="rs-gam-wrong-text" id="rs-gam-wrong-text"></div>
+          </div>
+          <div class="rs-gam-stats">
+            <div class="rs-gam-stat">
+              <div class="rs-gam-stat-val win" id="rs-gam-duration">—</div>
+              <div class="rs-gam-stat-lbl">call length</div>
+            </div>
+            <div class="rs-gam-stat">
+              <div class="rs-gam-stat-val diff-medium" id="rs-gam-difficulty">—</div>
+              <div class="rs-gam-stat-lbl">difficulty</div>
             </div>
           </div>
-          <div class="skel skel-next-label"></div>
-          <div class="skel-next-row"><div class="skel skel-next-circle"></div><div class="skel skel-next-line" style="width:85%;"></div></div>
-          <div class="skel-next-row"><div class="skel skel-next-circle"></div><div class="skel skel-next-line" style="width:75%;"></div></div>
-          <div class="skel-next-row"><div class="skel skel-next-circle"></div><div class="skel skel-next-line" style="width:80%;"></div></div>
+          <div class="rs-gam-actions">
+            <button class="rs-gam-btn rs-gam-btn-primary" id="rs-gam-btn-action" onclick="resetFromVerdict()">Try harder prospect</button>
+          </div>
+          <button class="rs-gam-report-btn" onclick="openNewsletterModal()">Show my full report</button>
         </div>
-        <!-- Left verdict content (hidden while loading) -->
-        <div id="rs-left-content" style="display:none;">
-        <div>
-          <div class="rs-eyebrow" id="rs-eyebrow"></div>
-          <div class="rs-heading" id="rs-heading"></div>
-          <div class="rs-body" id="rs-body"></div>
-        </div>
-        <div class="rs-quote-block">
-          <div class="rs-quote-text" id="rs-quote-text"></div>
-          <div class="rs-quote-attr" id="rs-quote-attr"></div>
-        </div>
-        <div>
-          <div class="rs-next-label">What to do next</div>
-          <div class="rs-next-item"><div class="rs-next-num">1</div><div class="rs-next-text" id="rs-next-1"></div></div>
-          <div class="rs-next-item"><div class="rs-next-num">2</div><div class="rs-next-text" id="rs-next-2"></div></div>
-          <div class="rs-next-item"><div class="rs-next-num">3</div><div class="rs-next-text" id="rs-next-3"></div></div>
-        </div>
-        </div><!-- close rs-left-content -->
-        <button class="rs-try-again" id="rs-try-again">Try again</button>
-        <div class="rs-left-footer">coldtalk &nbsp;·&nbsp; Your AI cold call coach</div>
+        <div class="rs-gam-footer">coldtalk &nbsp;·&nbsp; Your AI cold call coach</div>
       </div>
 
       <!-- Right: locked scorecard -->
       <div class="rs-right">
+        <button class="rs-back-btn" onclick="hideReportView()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to results
+        </button>
         <div class="rs-topbar">
           <div class="rs-topbar-label">Call scorecard</div>
           <div class="rs-call-meta" id="rs-call-meta"></div>
@@ -1608,16 +1922,47 @@
           <div class="rs-bar-row"><div class="rs-bar-lbl-row"><span class="rs-bar-lbl">Tone &amp; pace</span><span class="rs-bar-score-lock" id="rs-score-tone">locked</span></div><div class="rs-bar-track"><div class="rs-bar-fill locked" id="rs-bar-tone" style="width:100%;"></div></div></div>
           <div class="rs-bar-row"><div class="rs-bar-lbl-row"><span class="rs-bar-lbl">Closing</span><span class="rs-bar-score-lock" id="rs-score-close">locked</span></div><div class="rs-bar-track"><div class="rs-bar-fill locked" id="rs-bar-close" style="width:100%;"></div></div></div>
           <div class="rs-bar-row"><div class="rs-bar-lbl-row"><span class="rs-bar-lbl">Active listening</span><span class="rs-bar-score-lock" id="rs-score-listen">locked</span></div><div class="rs-bar-track"><div class="rs-bar-fill locked" id="rs-bar-listen" style="width:100%;"></div></div></div>
-          <div class="rs-lock-banner" id="rs-lock-banner">&#128274; &nbsp;4 more insights locked — unlock for $1.49</div>
-          <button class="rs-cta-btn" id="rs-cta-btn" onclick="rsStartCheckout()">Unlock my full debrief &#8594;</button>
+          <div class="rs-lock-banner" id="rs-lock-banner">&#128274; &nbsp;4 more insights locked</div>
+          <button class="rs-cta-btn" id="rs-cta-btn" onclick="openNewsletterModal()">Unlock my full report &rarr;</button>
           <button class="rs-download-btn" id="rs-download-btn" onclick="rsDownloadReport()">&#8595; Download report (PDF)</button>
-          <p class="rs-price-note" id="rs-price-note">One-time $1.49</p>
         </div>
       </div>
 
     </div>
   </div>
 
+
+  <!-- Newsletter modal (mobile bottom sheet / desktop centered) -->
+  <div class="nl-overlay" id="nl-overlay" onclick="closeNewsletterModal(event)">
+    <div class="nl-sheet" onclick="event.stopPropagation()">
+      <div class="nl-handle" onclick="closeNewsletterModal()"><div class="nl-handle-bar"></div></div>
+      <div id="nl-form-content">
+        <div class="nl-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4ABA8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="nl-title">Unlock your full report</div>
+        <div class="nl-subtitle">Get your detailed scorecard with skill breakdown, highlights, and personalized coaching tips.</div>
+        <div class="nl-field">
+          <label>Your name</label>
+          <input type="text" id="nl-name" placeholder="John Smith">
+        </div>
+        <div class="nl-field">
+          <label>Email address</label>
+          <input type="email" id="nl-email" placeholder="john@company.com">
+        </div>
+        <button class="nl-submit" id="nl-submit-btn" onclick="submitNewsletterForm()">Get my report &rarr;</button>
+        <div class="nl-note">No spam, ever. We'll send you weekly cold call tips.</div>
+      </div>
+      <div class="nl-success" id="nl-success">
+        <div class="nl-success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4ABA8A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="nl-success-title">Report unlocked!</div>
+        <div class="nl-success-sub">Your full scorecard is ready.</div>
+        <button class="nl-success-btn" onclick="showUnlockedReport()">View my report &rarr;</button>
+      </div>
+    </div>
+  </div>
 
   <a id="powered-by" href="https://ncrese.com" target="_blank">powered by <span style="color: #097057">ncrese</span></a>
 
