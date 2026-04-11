@@ -158,7 +158,7 @@ app.post("/start-call", async (req, res) => {
       agent_id: "agent_e0700657d1382fb2ee1ac6679f",
       metadata: { product, prospectType, difficulty },
       retell_llm_dynamic_variables: { product, prospectType: enrichedPersona, difficulty },
-      agent_override: { voice_id: "11labs-Brian" },
+      agent_override: { voice_id: "11labs-Brian", max_call_duration_ms: 180000 },
     };
 
     const response = await fetch("https://api.retellai.com/v2/create-web-call", {
