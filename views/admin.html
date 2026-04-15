@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ColdTalk Admin</title>
+  <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0a;
+      --panel: #0d1117;
+      --panel-2: #12181f;
+      --border: #1f2631;
+      --border-2: #2a323f;
+      --text: #F0EFE9;
+      --text-dim: #8b95a7;
+      --text-muted: #5a6374;
+      --green: #4ABA8A;
+      --green-dim: rgba(74, 186, 138, 0.15);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --amber: #f59e0b;
+      --blue: #60a5fa;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+    a { color: var(--green); text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    input, select { font-family: inherit; }
+
+    .container { max-width: 1500px; margin: 0 auto; padding: 24px 32px 64px; }
+
+    header.top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 600;
+    }
+    .brand .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+    .brand small {
+      color: var(--text-dim); font-weight: 400; font-size: 13px;
+      margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--border-2);
+    }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+
+    .btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border-2);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .btn:hover { border-color: var(--green); color: var(--green); }
+    .btn.primary {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0a0a0a;
+    }
+    .btn.primary:hover { filter: brightness(1.1); color: #0a0a0a; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+    .field {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .field input, .field select {
+      background: var(--panel);
+      border: 1px solid var(--border-2);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      min-width: 150px;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+    .field.grow { flex: 1; min-width: 200px; }
+    .field.grow input { width: 100%; }
+
+    /* KPI cards */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--green);
+    }
+    .kpi .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .kpi .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+      letter-spacing: -0.02em;
+    }
+    .kpi .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Analytics grid */
+    .analytics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card h3 small {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Bar chart */
+    .bars { display: flex; flex-direction: column; gap: 10px; }
+    .bar-row { display: flex; flex-direction: column; gap: 4px; }
+    .bar-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-dim);
+    }
+    .bar-label .name {
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+    .bar-track {
+      height: 8px;
+      background: var(--panel-2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #6ad4a6);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .bar-fill.alt { background: linear-gradient(90deg, var(--blue), #93c5fd); }
+    .bar-fill.warn { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+
+    /* Difficulty donut-ish using pill rows */
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .diff-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .diff-card .d-name {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .diff-card .d-val {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .diff-card .d-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .diff-card.easy .d-name { color: var(--green); }
+    .diff-card.medium .d-name { color: var(--amber); }
+    .diff-card.hard .d-name { color: var(--red); }
+
+    /* Table */
+    .table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-head h3 { font-size: 14px; font-weight: 600; }
+    .table-head .count { font-size: 12px; color: var(--text-dim); }
+    .scroll {
+      overflow: auto;
+      max-height: 70vh;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: var(--panel-2);
+      z-index: 1;
+    }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { color: var(--text); }
+    th.sorted { color: var(--green); }
+    th .arrow { opacity: 0.5; margin-left: 4px; }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+      cursor: pointer;
+    }
+    tbody tr:hover { background: var(--panel-2); }
+    tbody tr:last-child { border-bottom: none; }
+    td {
+      padding: 12px 16px;
+      color: var(--text);
+      white-space: nowrap;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    td.dim { color: var(--text-dim); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--border-2);
+    }
+    .pill.easy { background: var(--green-dim); color: var(--green); border-color: transparent; }
+    .pill.medium { background: rgba(245, 158, 11, 0.15); color: var(--amber); border-color: transparent; }
+    .pill.hard { background: var(--red-dim); color: var(--red); border-color: transparent; }
+    .pill.booked { background: var(--green-dim); color: var(--green); border-color: transparent; }
+    .pill.nobook { background: var(--panel-2); color: var(--text-muted); }
+    .score {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .score.good { color: var(--green); }
+    .score.mid { color: var(--amber); }
+    .score.bad { color: var(--red); }
+    .score.none { color: var(--text-muted); }
+
+    .empty {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+    .loading {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid var(--border-2);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      z-index: 100;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 860px;
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .modal-header .meta {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 24px;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .close-btn:hover { color: var(--text); background: var(--panel-2); }
+
+    .modal-body {
+      padding: 20px 24px 24px;
+    }
+    .modal-section { margin-bottom: 20px; }
+    .modal-section h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    audio { width: 100%; }
+    audio::-webkit-media-controls-panel {
+      background: var(--panel-2);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .info-grid .k {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+    }
+    .info-grid .v { font-size: 14px; font-weight: 500; margin-top: 2px; }
+
+    .verdict-box {
+      background: var(--panel-2);
+      border-left: 3px solid var(--green);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .skill-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 40px;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 0;
+    }
+    .skill-row .s-name {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: capitalize;
+    }
+    .skill-row .s-val {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .highlights { display: flex; flex-direction: column; gap: 8px; }
+    .highlight {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+      border-left: 2px solid;
+    }
+    .highlight.positive {
+      background: var(--green-dim);
+      border-color: var(--green);
+      color: #b4e6cf;
+    }
+    .highlight.negative {
+      background: var(--red-dim);
+      border-color: var(--red);
+      color: #fecaca;
+    }
+
+    .transcript {
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 85%;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .msg.agent {
+      background: var(--panel);
+      border: 1px solid var(--border-2);
+      align-self: flex-start;
+    }
+    .msg.user {
+      background: var(--green-dim);
+      border: 1px solid rgba(74, 186, 138, 0.3);
+      align-self: flex-end;
+      color: #d6f1e5;
+    }
+    .msg .role {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a4454; }
+
+    @media (max-width: 720px) {
+      .container { padding: 16px; }
+      .diff-grid { grid-template-columns: 1fr; }
+      th, td { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="top">
+      <div class="brand">
+        <span class="dot"></span>
+        ColdTalk
+        <small>Admin Dashboard</small>
+      </div>
+      <div class="top-actions">
+        <button class="btn" id="refresh-btn">Refresh</button>
+      </div>
+    </header>
+
+    <div class="controls">
+      <div class="field">
+        <label for="from-date">From</label>
+        <input type="date" id="from-date">
+      </div>
+      <div class="field">
+        <label for="to-date">To</label>
+        <input type="date" id="to-date">
+      </div>
+      <div class="field">
+        <label for="product-filter">Product</label>
+        <select id="product-filter"><option value="">All</option></select>
+      </div>
+      <div class="field">
+        <label for="prospect-filter">Prospect Type</label>
+        <select id="prospect-filter"><option value="">All</option></select>
+      </div>
+      <div class="field">
+        <label for="difficulty-filter">Difficulty</label>
+        <select id="difficulty-filter">
+          <option value="">All</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="booked-filter">Meeting</label>
+        <select id="booked-filter">
+          <option value="">All</option>
+          <option value="booked">Booked</option>
+          <option value="notbooked">Not Booked</option>
+        </select>
+      </div>
+      <div class="field grow">
+        <label for="search-input">Search</label>
+        <input type="text" id="search-input" placeholder="Name, product, prospect, email…">
+      </div>
+      <button class="btn primary" id="apply-btn">Apply Range</button>
+    </div>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="analytics">
+      <div class="card">
+        <h3>Top Products <small>Most common</small></h3>
+        <div class="bars" id="top-products"></div>
+      </div>
+      <div class="card">
+        <h3>Top Prospect Types <small>Most common</small></h3>
+        <div class="bars" id="top-prospects"></div>
+      </div>
+      <div class="card">
+        <h3>Difficulty Distribution</h3>
+        <div class="diff-grid" id="diff-dist"></div>
+      </div>
+      <div class="card">
+        <h3>Success by Difficulty <small>Avg overall score</small></h3>
+        <div class="bars" id="diff-success"></div>
+      </div>
+    </section>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <h3>Call Sessions</h3>
+        <span class="count" id="table-count">0 calls</span>
+      </div>
+      <div class="scroll">
+        <table id="sessions-table">
+          <thead>
+            <tr>
+              <th data-sort="created_at" class="sorted">Date <span class="arrow">↓</span></th>
+              <th data-sort="display_name">Prospect</th>
+              <th data-sort="product">Product</th>
+              <th data-sort="prospect_type">Type</th>
+              <th data-sort="difficulty">Difficulty</th>
+              <th data-sort="duration_sec">Duration</th>
+              <th data-sort="overall">Score</th>
+              <th data-sort="meetingBooked">Meeting</th>
+              <th data-sort="cost">Cost</th>
+              <th data-sort="subscriber_email">Email</th>
+            </tr>
+          </thead>
+          <tbody id="sessions-tbody">
+            <tr><td colspan="10" class="loading"><span class="spinner"></span>Loading sessions…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="m-title">Session</h2>
+          <div class="meta" id="m-meta"></div>
+        </div>
+        <button class="close-btn" id="m-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    const state = {
+      all: [],        // all sessions from server (date-filtered)
+      filtered: [],   // after client-side filters
+      sortKey: 'created_at',
+      sortDir: 'desc',
+    };
+
+    // ── Helpers ──
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+    function fmtDuration(sec) {
+      if (sec == null) return '—';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+    function fmtMoney(n) {
+      if (n == null || isNaN(n)) return '$0.00';
+      if (n < 0.01 && n > 0) return `$${n.toFixed(4)}`;
+      return `$${n.toFixed(2)}`;
+    }
+    function sessionCost(s) {
+      return (+s.cost_openai_enrich || 0) + (+s.cost_openai_report || 0) + (+s.cost_retell || 0);
+    }
+    function scoreClass(v) {
+      if (v == null) return 'none';
+      if (v >= 7) return 'good';
+      if (v >= 4) return 'mid';
+      return 'bad';
+    }
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    // ── Fetch sessions (server-side date filter) ──
+    async function loadSessions() {
+      const tbody = $('#sessions-tbody');
+      tbody.innerHTML = '<tr><td colspan="10" class="loading"><span class="spinner"></span>Loading sessions…</td></tr>';
+
+      const from = $('#from-date').value;
+      const to = $('#to-date').value;
+      const params = new URLSearchParams();
+      if (from) params.set('from', new Date(from).toISOString());
+      if (to) {
+        // Include the entire "to" day
+        const toEnd = new Date(to);
+        toEnd.setHours(23, 59, 59, 999);
+        params.set('to', toEnd.toISOString());
+      }
+
+      try {
+        const res = await fetch('/admin/api/sessions?' + params.toString(), {
+          credentials: 'same-origin'
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        state.all = json.sessions || [];
+        populateFilterOptions();
+        applyFilters();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="10" class="empty">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    // ── Populate filter dropdowns from data ──
+    function populateFilterOptions() {
+      const productSel = $('#product-filter');
+      const prospectSel = $('#prospect-filter');
+      const products = new Set();
+      const prospects = new Set();
+      for (const s of state.all) {
+        if (s.product) products.add(s.product);
+        if (s.prospect_type) prospects.add(s.prospect_type);
+      }
+      const curProduct = productSel.value;
+      const curProspect = prospectSel.value;
+      productSel.innerHTML = '<option value="">All</option>' +
+        [...products].sort().map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+      prospectSel.innerHTML = '<option value="">All</option>' +
+        [...prospects].sort().map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+      if (curProduct) productSel.value = curProduct;
+      if (curProspect) prospectSel.value = curProspect;
+    }
+
+    // ── Apply client-side filters ──
+    function applyFilters() {
+      const product = $('#product-filter').value;
+      const prospect = $('#prospect-filter').value;
+      const difficulty = $('#difficulty-filter').value;
+      const booked = $('#booked-filter').value;
+      const search = $('#search-input').value.trim().toLowerCase();
+
+      state.filtered = state.all.filter(s => {
+        if (product && s.product !== product) return false;
+        if (prospect && s.prospect_type !== prospect) return false;
+        if (difficulty && s.difficulty !== difficulty) return false;
+        if (booked === 'booked' && !s.report?.meetingBooked) return false;
+        if (booked === 'notbooked' && s.report?.meetingBooked) return false;
+        if (search) {
+          const hay = [
+            s.display_name, s.product, s.prospect_type,
+            s.subscriber_email, s.subscriber_name, s.difficulty
+          ].filter(Boolean).join(' ').toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      });
+
+      renderAll();
+    }
+
+    // ── Render everything ──
+    function renderAll() {
+      renderKPIs();
+      renderAnalytics();
+      renderTable();
+    }
+
+    // ── KPIs ──
+    function renderKPIs() {
+      const rows = state.filtered;
+      const totalCalls = rows.length;
+      const emails = rows.filter(s => s.subscriber_email).length;
+      const totalCost = rows.reduce((sum, s) => sum + sessionCost(s), 0);
+      const durations = rows.map(s => s.duration_sec).filter(x => x != null && x > 0);
+      const avgDuration = durations.length
+        ? durations.reduce((a, b) => a + b, 0) / durations.length
+        : 0;
+      const scores = rows.map(s => s.report?.overall).filter(x => x != null && x > 0);
+      const avgScore = scores.length
+        ? scores.reduce((a, b) => a + b, 0) / scores.length
+        : 0;
+      const booked = rows.filter(s => s.report?.meetingBooked).length;
+
+      $('#kpis').innerHTML = `
+        <div class="kpi">
+          <div class="label">Total Calls</div>
+          <div class="value">${totalCalls.toLocaleString()}</div>
+          <div class="sub">${booked} meetings booked</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Emails Collected</div>
+          <div class="value">${emails.toLocaleString()}</div>
+          <div class="sub">${totalCalls ? ((emails / totalCalls) * 100).toFixed(1) : 0}% conversion</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Total Cost</div>
+          <div class="value">${fmtMoney(totalCost)}</div>
+          <div class="sub">${fmtMoney(totalCalls ? totalCost / totalCalls : 0)} per call</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Avg Duration</div>
+          <div class="value">${fmtDuration(avgDuration)}</div>
+          <div class="sub">${durations.length} scored</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Avg Score</div>
+          <div class="value">${avgScore.toFixed(1)}<span style="font-size:16px;color:var(--text-dim)">/10</span></div>
+          <div class="sub">${scores.length} calls scored</div>
+        </div>
+      `;
+    }
+
+    // ── Analytics ──
+    function renderAnalytics() {
+      const rows = state.filtered;
+
+      // Top products
+      const productCounts = countBy(rows, 'product');
+      $('#top-products').innerHTML = renderBars(productCounts.slice(0, 5), 'count');
+
+      // Top prospect types
+      const prospectCounts = countBy(rows, 'prospect_type');
+      $('#top-prospects').innerHTML = renderBars(prospectCounts.slice(0, 5), 'count', 'alt');
+
+      // Difficulty distribution
+      const diffCounts = {
+        easy: rows.filter(r => r.difficulty === 'easy').length,
+        medium: rows.filter(r => r.difficulty === 'medium').length,
+        hard: rows.filter(r => r.difficulty === 'hard').length,
+      };
+      const total = rows.length || 1;
+      $('#diff-dist').innerHTML = ['easy', 'medium', 'hard'].map(d => `
+        <div class="diff-card ${d}">
+          <div class="d-name">${d}</div>
+          <div class="d-val">${diffCounts[d]}</div>
+          <div class="d-sub">${((diffCounts[d] / total) * 100).toFixed(0)}%</div>
+        </div>
+      `).join('');
+
+      // Success by difficulty (avg score)
+      const bySuccess = ['easy', 'medium', 'hard'].map(d => {
+        const scores = rows
+          .filter(r => r.difficulty === d)
+          .map(r => r.report?.overall)
+          .filter(x => x != null && x > 0);
+        const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+        return { name: d.charAt(0).toUpperCase() + d.slice(1), count: avg, display: avg.toFixed(1), max: 10 };
+      });
+      $('#diff-success').innerHTML = renderBars(bySuccess, 'count', 'warn', 10);
+    }
+
+    function countBy(rows, key) {
+      const counts = {};
+      for (const r of rows) {
+        const v = r[key];
+        if (!v) continue;
+        counts[v] = (counts[v] || 0) + 1;
+      }
+      return Object.entries(counts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+    }
+
+    function renderBars(items, valueKey, cls = '', maxOverride) {
+      if (!items.length) return '<div class="empty" style="padding:20px 0;font-size:12px">No data</div>';
+      const max = maxOverride || Math.max(...items.map(i => i[valueKey])) || 1;
+      return items.map(i => {
+        const pct = (i[valueKey] / max) * 100;
+        const display = i.display != null ? i.display : i[valueKey];
+        return `
+          <div class="bar-row">
+            <div class="bar-label">
+              <span class="name" title="${escapeHtml(i.name)}">${escapeHtml(i.name)}</span>
+              <span>${display}</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ── Table ──
+    function getSortValue(s, key) {
+      if (key === 'overall') return s.report?.overall ?? -1;
+      if (key === 'meetingBooked') return s.report?.meetingBooked ? 1 : 0;
+      if (key === 'cost') return sessionCost(s);
+      return s[key] ?? '';
+    }
+
+    function renderTable() {
+      const tbody = $('#sessions-tbody');
+      const rows = [...state.filtered].sort((a, b) => {
+        const av = getSortValue(a, state.sortKey);
+        const bv = getSortValue(b, state.sortKey);
+        let cmp = 0;
+        if (av < bv) cmp = -1;
+        else if (av > bv) cmp = 1;
+        return state.sortDir === 'asc' ? cmp : -cmp;
+      });
+
+      $('#table-count').textContent = `${rows.length} call${rows.length === 1 ? '' : 's'}`;
+
+      // Sort arrows
+      $$('th[data-sort]').forEach(th => {
+        const key = th.dataset.sort;
+        const arrow = th.querySelector('.arrow');
+        if (key === state.sortKey) {
+          th.classList.add('sorted');
+          if (arrow) arrow.textContent = state.sortDir === 'asc' ? '↑' : '↓';
+          else th.insertAdjacentHTML('beforeend', ` <span class="arrow">${state.sortDir === 'asc' ? '↑' : '↓'}</span>`);
+        } else {
+          th.classList.remove('sorted');
+          if (arrow) arrow.remove();
+        }
+      });
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty">No sessions match the current filters.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(s => {
+        const score = s.report?.overall;
+        const booked = s.report?.meetingBooked;
+        return `
+          <tr data-id="${escapeHtml(s.id)}">
+            <td class="dim">${fmtDate(s.created_at)}</td>
+            <td title="${escapeHtml(s.display_name || '')}">${escapeHtml(s.display_name || '—')}</td>
+            <td title="${escapeHtml(s.product || '')}">${escapeHtml(s.product || '—')}</td>
+            <td title="${escapeHtml(s.prospect_type || '')}">${escapeHtml(s.prospect_type || '—')}</td>
+            <td>${s.difficulty ? `<span class="pill ${s.difficulty}">${s.difficulty}</span>` : '—'}</td>
+            <td class="num">${fmtDuration(s.duration_sec)}</td>
+            <td class="num"><span class="score ${scoreClass(score)}">${score != null ? score.toFixed(1) : '—'}</span></td>
+            <td>${booked ? '<span class="pill booked">Booked</span>' : '<span class="pill nobook">—</span>'}</td>
+            <td class="num dim">${fmtMoney(sessionCost(s))}</td>
+            <td class="dim" title="${escapeHtml(s.subscriber_email || '')}">${s.subscriber_email ? escapeHtml(s.subscriber_email) : '—'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ── Modal ──
+    async function openSession(id) {
+      const backdrop = $('#modal-backdrop');
+      const body = $('#modal-body');
+      backdrop.classList.add('open');
+      body.innerHTML = '<div class="loading"><span class="spinner"></span>Loading…</div>';
+      $('#m-title').textContent = 'Session';
+      $('#m-meta').textContent = '';
+
+      try {
+        const res = await fetch('/admin/api/sessions/' + encodeURIComponent(id), {
+          credentials: 'same-origin'
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const s = await res.json();
+        renderModal(s);
+      } catch (err) {
+        body.innerHTML = `<div class="empty">Failed to load session: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderModal(s) {
+      const report = s.report || {};
+      const skills = report.skills || {};
+      const highlights = Array.isArray(report.highlights) ? report.highlights : [];
+
+      $('#m-title').textContent = s.display_name || 'Session';
+      $('#m-meta').textContent = `${fmtDate(s.created_at)} · ${s.call_id || ''}`;
+
+      const transcript = s.transcript;
+      let transcriptHtml = '<div class="empty" style="padding:20px;font-size:12px">No transcript available.</div>';
+      if (Array.isArray(transcript) && transcript.length) {
+        transcriptHtml = transcript.map(msg => {
+          const role = msg.role || 'agent';
+          const content = msg.content || '';
+          return `
+            <div class="msg ${role === 'user' ? 'user' : 'agent'}">
+              <div class="role">${escapeHtml(role)}</div>
+              <div>${escapeHtml(content)}</div>
+            </div>
+          `;
+        }).join('');
+      } else if (typeof transcript === 'string' && transcript.trim()) {
+        transcriptHtml = `<div class="msg agent"><div>${escapeHtml(transcript)}</div></div>`;
+      }
+
+      const recordingHtml = s.recording_url
+        ? `<audio controls src="${escapeHtml(s.recording_url)}"></audio>`
+        : '<div class="empty" style="padding:20px;font-size:12px">No recording available.</div>';
+
+      const score = report.overall;
+      const skillRowsHtml = Object.entries(skills).map(([name, val]) => {
+        const pct = (val / 10) * 100;
+        return `
+          <div class="skill-row">
+            <div class="s-name">${escapeHtml(name.replace(/([A-Z])/g, ' $1'))}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <div class="s-val">${val}</div>
+          </div>
+        `;
+      }).join('');
+
+      const highlightsHtml = highlights.map(h => `
+        <div class="highlight ${h.type === 'positive' ? 'positive' : 'negative'}">
+          ${escapeHtml(h.text || '')}
+        </div>
+      `).join('');
+
+      $('#modal-body').innerHTML = `
+        <div class="modal-section">
+          <h4>Call Info</h4>
+          <div class="info-grid">
+            <div><div class="k">Product</div><div class="v">${escapeHtml(s.product || '—')}</div></div>
+            <div><div class="k">Prospect</div><div class="v">${escapeHtml(s.prospect_type || '—')}</div></div>
+            <div><div class="k">Difficulty</div><div class="v">${s.difficulty ? `<span class="pill ${s.difficulty}">${s.difficulty}</span>` : '—'}</div></div>
+            <div><div class="k">Duration</div><div class="v">${fmtDuration(s.duration_sec)}</div></div>
+            <div><div class="k">Score</div><div class="v"><span class="score ${scoreClass(score)}">${score != null ? score.toFixed(1) : '—'}/10</span></div></div>
+            <div><div class="k">Meeting</div><div class="v">${report.meetingBooked ? '<span class="pill booked">Booked</span>' : '<span class="pill nobook">Not booked</span>'}</div></div>
+            <div><div class="k">Talk Ratio</div><div class="v">${escapeHtml(report.talkRatio || '—')}</div></div>
+            <div><div class="k">Objections</div><div class="v">${report.objectionCount ?? '—'}</div></div>
+            <div><div class="k">Cost</div><div class="v">${fmtMoney(sessionCost(s))}</div></div>
+            <div><div class="k">IP</div><div class="v">${escapeHtml(s.ip_address || '—')}</div></div>
+            <div><div class="k">Subscriber</div><div class="v">${escapeHtml(s.subscriber_email || '—')}</div></div>
+            <div><div class="k">Subscribed</div><div class="v">${s.subscribed_at ? fmtDate(s.subscribed_at) : '—'}</div></div>
+          </div>
+        </div>
+
+        ${report.verdict ? `
+          <div class="modal-section">
+            <h4>Verdict</h4>
+            <div class="verdict-box">${escapeHtml(report.verdict)}</div>
+          </div>
+        ` : ''}
+
+        ${skillRowsHtml ? `
+          <div class="modal-section">
+            <h4>Skill Breakdown</h4>
+            ${skillRowsHtml}
+          </div>
+        ` : ''}
+
+        ${highlightsHtml ? `
+          <div class="modal-section">
+            <h4>Highlights</h4>
+            <div class="highlights">${highlightsHtml}</div>
+          </div>
+        ` : ''}
+
+        <div class="modal-section">
+          <h4>Recording</h4>
+          ${recordingHtml}
+        </div>
+
+        <div class="modal-section">
+          <h4>Transcript</h4>
+          <div class="transcript">${transcriptHtml}</div>
+        </div>
+      `;
+    }
+
+    function closeModal() {
+      $('#modal-backdrop').classList.remove('open');
+    }
+
+    // ── Events ──
+    $('#apply-btn').addEventListener('click', loadSessions);
+    $('#refresh-btn').addEventListener('click', loadSessions);
+    $('#product-filter').addEventListener('change', applyFilters);
+    $('#prospect-filter').addEventListener('change', applyFilters);
+    $('#difficulty-filter').addEventListener('change', applyFilters);
+    $('#booked-filter').addEventListener('change', applyFilters);
+    $('#search-input').addEventListener('input', debounce(applyFilters, 180));
+
+    $$('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (state.sortKey === key) {
+          state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sortKey = key;
+          state.sortDir = 'desc';
+        }
+        renderTable();
+      });
+    });
+
+    $('#sessions-tbody').addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-id]');
+      if (tr) openSession(tr.dataset.id);
+    });
+
+    $('#m-close').addEventListener('click', closeModal);
+    $('#modal-backdrop').addEventListener('click', (e) => {
+      if (e.target === $('#modal-backdrop')) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    function debounce(fn, ms) {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+    }
+
+    // ── Init ──
+    loadSessions();
+  </script>
+</body>
+</html>

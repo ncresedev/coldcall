@@ -342,6 +342,74 @@ app.post("/subscribe", async (req, res) => {
   res.json({ success: true });
 });
 
+// ── Admin ──
+
+function requireBasicAuth(req, res, next) {
+  const expectedEmail = process.env.USER_EMAIL;
+  const expectedPassword = process.env.USER_PASSWORD;
+  if (!expectedEmail || !expectedPassword) {
+    return res.status(500).send("Admin credentials not configured. Set USER_EMAIL and USER_PASSWORD in .env");
+  }
+  const auth = req.headers.authorization || "";
+  if (!auth.startsWith("Basic ")) {
+    res.set("WWW-Authenticate", 'Basic realm="ColdTalk Admin", charset="UTF-8"');
+    return res.status(401).send("Authentication required");
+  }
+  let decoded;
+  try {
+    decoded = Buffer.from(auth.slice(6), "base64").toString("utf8");
+  } catch {
+    res.set("WWW-Authenticate", 'Basic realm="ColdTalk Admin", charset="UTF-8"');
+    return res.status(401).send("Invalid credentials");
+  }
+  const sep = decoded.indexOf(":");
+  const user = sep >= 0 ? decoded.slice(0, sep) : decoded;
+  const pass = sep >= 0 ? decoded.slice(sep + 1) : "";
+  if (user !== expectedEmail || pass !== expectedPassword) {
+    res.set("WWW-Authenticate", 'Basic realm="ColdTalk Admin", charset="UTF-8"');
+    return res.status(401).send("Invalid credentials");
+  }
+  next();
+}
+
+app.get("/admin", requireBasicAuth, (_req, res) => {
+  res.sendFile("admin.html", { root: "views" });
+});
+
+// List sessions (excludes transcript for payload size). Supports ?from=ISO&to=ISO
+app.get("/admin/api/sessions", requireBasicAuth, async (req, res) => {
+  const { from, to } = req.query;
+  let query = supabase
+    .from("sessions")
+    .select(
+      "id, created_at, ip_address, product, prospect_type, difficulty, call_id, display_name, recording_url, duration_sec, report, cost_openai_enrich, cost_openai_report, cost_retell, subscriber_name, subscriber_email, subscribed_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  if (from) query = query.gte("created_at", from);
+  if (to) query = query.lte("created_at", to);
+  const { data, error } = await query;
+  if (error) {
+    console.error("admin sessions list failed:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+  res.json({ sessions: data || [] });
+});
+
+// Full session detail (includes transcript) for modal view
+app.get("/admin/api/sessions/:id", requireBasicAuth, async (req, res) => {
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .eq("id", req.params.id)
+    .single();
+  if (error) {
+    console.error("admin session detail failed:", error.message);
+    return res.status(404).json({ error: error.message });
+  }
+  res.json(data);
+});
+
 // Health check
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
