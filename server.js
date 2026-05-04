@@ -4,7 +4,19 @@ const express = require("express");
 const OpenAI = require("openai");
 const { createClient } = require("@supabase/supabase-js");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Surface module-load crashes in serverless logs instead of dying silently.
+process.on("uncaughtException", (err) => {
+  console.error("uncaughtException:", err && err.stack ? err.stack : err);
+});
+process.on("unhandledRejection", (err) => {
+  console.error("unhandledRejection:", err && err.stack ? err.stack : err);
+});
+
+if (!process.env.OPENAI_API_KEY) {
+  console.error("⚠ OPENAI_API_KEY is not set — OpenAI calls will fail at runtime");
+}
+// Pass a placeholder when the key is missing so the constructor doesn't throw at module load.
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "missing-key" });
 
 // Supabase — use the service_role key (long JWT starting with eyJ...), NOT the anon/publishable key
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
