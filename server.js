@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const OpenAI = require("openai");
 const { createClient } = require("@supabase/supabase-js");
@@ -6,20 +7,27 @@ const { createClient } = require("@supabase/supabase-js");
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Supabase — use the service_role key (long JWT starting with eyJ...), NOT the anon/publishable key
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+  console.error("⚠ Supabase env vars missing: set SUPABASE_URL and SUPABASE_SERVICE_KEY");
+}
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_SERVICE_KEY || "placeholder"
 );
 
-// Verify Supabase connection on startup
+// Verify Supabase connection on startup (non-fatal — never throw at module load on serverless)
 (async () => {
-  const { error } = await supabase.from("sessions").select("id").limit(1);
-  if (error) {
-    console.error("⚠ Supabase connection FAILED:", error.message);
-    console.error("  Check SUPABASE_URL and SUPABASE_SERVICE_KEY in .env");
-    console.error("  The service key should be a long JWT starting with 'eyJ...'");
-  } else {
-    console.log("✓ Supabase connected");
+  try {
+    const { error } = await supabase.from("sessions").select("id").limit(1);
+    if (error) {
+      console.error("⚠ Supabase connection FAILED:", error.message);
+      console.error("  Check SUPABASE_URL and SUPABASE_SERVICE_KEY env vars");
+      console.error("  The service key should be a long JWT starting with 'eyJ...'");
+    } else {
+      console.log("✓ Supabase connected");
+    }
+  } catch (err) {
+    console.error("⚠ Supabase startup check threw:", err.message);
   }
 })();
 
@@ -29,7 +37,7 @@ const paidCalls = new Set();
 
 const app = express();
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // ── Helpers ──
 
@@ -373,7 +381,7 @@ function requireBasicAuth(req, res, next) {
 }
 
 app.get("/admin", requireBasicAuth, (_req, res) => {
-  res.sendFile("admin.html", { root: "views" });
+  res.sendFile("admin.html", { root: path.join(__dirname, "views") });
 });
 
 // List sessions (excludes transcript for payload size). Supports ?from=ISO&to=ISO
@@ -413,7 +421,13 @@ app.get("/admin/api/sessions/:id", requireBasicAuth, async (req, res) => {
 // Health check
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Cold call bot server running on port ${PORT}`);
-});
+// On Vercel, the platform imports this module and invokes the exported handler —
+// don't bind a port. Locally, run a real server.
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Cold call bot server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
